@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
@@ -21,44 +21,91 @@ import { ReminderProvider } from './contexts/ReminderContext';
 import { ProgressProvider } from './contexts/ProgressContext';
 import { CalendarProvider } from './contexts/CalendarContext';
 import { UserProvider } from './contexts/UserContext';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useAuth } from '@/contexts/AuthContext';
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <UserProvider>
-        <BrowserRouter>
-          <CalendarProvider>
-            <ProgressProvider>
-              <ReminderProvider>
-                <NutritionProvider>
-                  <WorkoutProvider>
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/onboarding" element={<Onboarding />} />
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/workouts" element={<WorkoutGenerator />} />
-                      <Route path="/nutrition" element={<Nutrition />} />
-                      <Route path="/reminders" element={<Reminders />} />
-                      <Route path="/progress" element={<Progress />} />
-                      <Route path="/calendar" element={<Calendar />} />
-                      <Route path="/settings" element={<Settings />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </WorkoutProvider>
-                </NutritionProvider>
-              </ReminderProvider>
-            </ProgressProvider>
-          </CalendarProvider>
-        </BrowserRouter>
-      </UserProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  const { user } = useAuth();
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <UserProvider>
+          <Router>
+            <CalendarProvider>
+              <ProgressProvider>
+                <ReminderProvider>
+                  <NutritionProvider>
+                    <WorkoutProvider>
+                      <Routes>
+                        {/* Páginas públicas */}
+                        <Route path="/" element={<Index />} />
+                        <Route path="/auth" element={user ? <Navigate to="/dashboard" replace /> : <Auth />} />
+
+                        {/* Páginas protegidas */}
+                        <Route path="/onboarding" element={
+                          <ProtectedRoute>
+                            <Onboarding />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/dashboard" element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/nutrition" element={
+                          <ProtectedRoute>
+                            <Nutrition />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/workout-generator" element={
+                          <ProtectedRoute>
+                            <WorkoutGenerator />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/progress" element={
+                          <ProtectedRoute>
+                            <Progress />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/calendar" element={
+                          <ProtectedRoute>
+                            <Calendar />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/reminders" element={
+                          <ProtectedRoute>
+                            <Reminders />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/profile" element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/settings" element={
+                          <ProtectedRoute>
+                            <Settings />
+                          </ProtectedRoute>
+                        } />
+
+                        {/* Página 404 */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </WorkoutProvider>
+                  </NutritionProvider>
+                </ReminderProvider>
+              </ProgressProvider>
+            </CalendarProvider>
+          </Router>
+        </UserProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
