@@ -6,311 +6,827 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instanciate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
       achievements: {
         Row: {
+          achievement_type: Database["public"]["Enums"]["achievement_type"]
+          created_at: string
+          description: string
+          icon: string | null
           id: string
           name: string
-          description: string
-          achievement_type: string
-          points: number
-          created_at: string
-          icon?: string
+          points: number | null
         }
-        Insert: Omit<Tables['achievements']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['achievements']['Insert']>
+        Insert: {
+          achievement_type: Database["public"]["Enums"]["achievement_type"]
+          created_at?: string
+          description: string
+          icon?: string | null
+          id?: string
+          name: string
+          points?: number | null
+        }
+        Update: {
+          achievement_type?: Database["public"]["Enums"]["achievement_type"]
+          created_at?: string
+          description?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          points?: number | null
+        }
+        Relationships: []
       }
       activity_history: {
         Row: {
-          id: string
-          user_id: string
+          activity_data: Json
           activity_type: string
-          description: string
           created_at: string
-          metadata: Json
+          id: string
+          points_earned: number | null
+          user_id: string
         }
-        Insert: Omit<Tables['activity_history']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['activity_history']['Insert']>
+        Insert: {
+          activity_data: Json
+          activity_type: string
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json
+          activity_type?: string
+          created_at?: string
+          id?: string
+          points_earned?: number | null
+          user_id?: string
+        }
+        Relationships: []
       }
       body_measurements: {
         Row: {
-          id: string
-          user_id: string
-          date: string
-          chest: number
-          waist: number
-          hips: number
-          biceps: number
-          thighs: number
+          arm_cm: number | null
+          chest_cm: number | null
           created_at: string
-          updated_at: string
+          hip_cm: number | null
+          id: string
+          notes: string | null
+          recorded_date: string
+          thigh_cm: number | null
+          user_id: string
+          waist_cm: number | null
         }
-        Insert: Omit<Tables['body_measurements']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['body_measurements']['Insert']>
+        Insert: {
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          recorded_date: string
+          thigh_cm?: number | null
+          user_id: string
+          waist_cm?: number | null
+        }
+        Update: {
+          arm_cm?: number | null
+          chest_cm?: number | null
+          created_at?: string
+          hip_cm?: number | null
+          id?: string
+          notes?: string | null
+          recorded_date?: string
+          thigh_cm?: number | null
+          user_id?: string
+          waist_cm?: number | null
+        }
+        Relationships: []
       }
       calendar_events: {
         Row: {
-          id: string
-          user_id: string
-          title: string
-          description: string
-          start_date: string
-          end_date: string
-          event_type: string
-          status: string
-          location?: string
-          reminder?: boolean
-          reminder_time?: string
+          completed: boolean | null
           created_at: string
+          description: string | null
+          duration_minutes: number | null
+          event_date: string
+          event_time: string | null
+          event_type: string
+          id: string
+          reminder_minutes: number | null
+          title: string
+          updated_at: string
+          user_id: string
         }
-        Insert: Omit<Tables['calendar_events']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['calendar_events']['Insert']>
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          event_date: string
+          event_time?: string | null
+          event_type: string
+          id?: string
+          reminder_minutes?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          event_date?: string
+          event_time?: string | null
+          event_type?: string
+          id?: string
+          reminder_minutes?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       exercises: {
         Row: {
-          id: string
-          name: string
-          description: string
-          muscle_group: string
-          equipment_needed: string[]
-          difficulty: string
-          instructions: string[]
-          video_url?: string
-          image_url?: string
-          calories_per_hour?: number
+          calories_per_minute: number | null
           created_at: string
+          description: string | null
+          difficulty_level: Database["public"]["Enums"]["experience_level"]
+          duration_seconds: number | null
+          equipment_required:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          id: string
+          image_url: string | null
+          instructions: string | null
+          muscle_groups: string[] | null
+          name: string
+          rest_seconds: number | null
           updated_at: string
-          metadata: Json
-          category: string
+          video_url: string | null
         }
-        Insert: Omit<Tables['exercises']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['exercises']['Insert']>
+        Insert: {
+          calories_per_minute?: number | null
+          created_at?: string
+          description?: string | null
+          difficulty_level: Database["public"]["Enums"]["experience_level"]
+          duration_seconds?: number | null
+          equipment_required?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          id?: string
+          image_url?: string | null
+          instructions?: string | null
+          muscle_groups?: string[] | null
+          name: string
+          rest_seconds?: number | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          calories_per_minute?: number | null
+          created_at?: string
+          description?: string | null
+          difficulty_level?: Database["public"]["Enums"]["experience_level"]
+          duration_seconds?: number | null
+          equipment_required?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          id?: string
+          image_url?: string | null
+          instructions?: string | null
+          muscle_groups?: string[] | null
+          name?: string
+          rest_seconds?: number | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
       }
       food_items: {
         Row: {
+          barcode: string | null
+          brand: string | null
+          calories_per_100g: number
+          carbs_per_100g: number
+          created_at: string
+          fat_per_100g: number
+          fiber_per_100g: number | null
           id: string
           name: string
-          brand?: string
-          calories_per_100g: number
           protein_per_100g: number
-          carbs_per_100g: number
-          fat_per_100g: number
-          fiber_per_100g?: number
-          sodium_per_100g?: number
-          barcode?: string
-          created_at: string
+          sodium_per_100g: number | null
           updated_at: string
         }
-        Insert: Omit<Tables['food_items']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['food_items']['Insert']>
+        Insert: {
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g: number
+          carbs_per_100g: number
+          created_at?: string
+          fat_per_100g: number
+          fiber_per_100g?: number | null
+          id?: string
+          name: string
+          protein_per_100g: number
+          sodium_per_100g?: number | null
+          updated_at?: string
+        }
+        Update: {
+          barcode?: string | null
+          brand?: string | null
+          calories_per_100g?: number
+          carbs_per_100g?: number
+          created_at?: string
+          fat_per_100g?: number
+          fiber_per_100g?: number | null
+          id?: string
+          name?: string
+          protein_per_100g?: number
+          sodium_per_100g?: number | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       hydration_entries: {
         Row: {
-          id: string
-          user_id: string
           amount_ml: number
-          created_at: string
+          hydration_record_id: string
+          id: string
+          recorded_at: string
         }
-        Insert: Omit<Tables['hydration_entries']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['hydration_entries']['Insert']>
+        Insert: {
+          amount_ml: number
+          hydration_record_id: string
+          id?: string
+          recorded_at?: string
+        }
+        Update: {
+          amount_ml?: number
+          hydration_record_id?: string
+          id?: string
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hydration_entries_hydration_record_id_fkey"
+            columns: ["hydration_record_id"]
+            isOneToOne: false
+            referencedRelation: "hydration_records"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hydration_records: {
         Row: {
-          id: string
-          user_id: string
-          date: string
-          total_intake_ml: number
-          goal_ml: number
-          status: string
-          notes?: string
+          consumed_ml: number | null
           created_at: string
+          daily_goal_ml: number
+          date: string
+          id: string
+          reminder_interval_minutes: number | null
+          silent_hours_end: string | null
+          silent_hours_start: string | null
           updated_at: string
-          achievement_unlocked: boolean
+          user_id: string
         }
-        Insert: Omit<Tables['hydration_records']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['hydration_records']['Insert']>
+        Insert: {
+          consumed_ml?: number | null
+          created_at?: string
+          daily_goal_ml: number
+          date: string
+          id?: string
+          reminder_interval_minutes?: number | null
+          silent_hours_end?: string | null
+          silent_hours_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consumed_ml?: number | null
+          created_at?: string
+          daily_goal_ml?: number
+          date?: string
+          id?: string
+          reminder_interval_minutes?: number | null
+          silent_hours_end?: string | null
+          silent_hours_start?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       meal_foods: {
         Row: {
+          calories: number
+          carbs: number
+          created_at: string
+          fat: number
+          food_item_id: string
           id: string
           meal_id: string
-          food_item_id: string
-          quantity: number
-          unit: string
-          notes?: string
-          created_at: string
-          order_index: number
-          consumed: boolean
+          protein: number
+          quantity_grams: number
         }
-        Insert: Omit<Tables['meal_foods']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['meal_foods']['Insert']>
+        Insert: {
+          calories: number
+          carbs: number
+          created_at?: string
+          fat: number
+          food_item_id: string
+          id?: string
+          meal_id: string
+          protein: number
+          quantity_grams: number
+        }
+        Update: {
+          calories?: number
+          carbs?: number
+          created_at?: string
+          fat?: number
+          food_item_id?: string
+          id?: string
+          meal_id?: string
+          protein?: number
+          quantity_grams?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_foods_food_item_id_fkey"
+            columns: ["food_item_id"]
+            isOneToOne: false
+            referencedRelation: "food_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_foods_meal_id_fkey"
+            columns: ["meal_id"]
+            isOneToOne: false
+            referencedRelation: "meals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meals: {
         Row: {
-          id: string
-          user_id: string
-          name: string
-          description?: string
-          meal_type: string
-          planned_time: string
-          actual_time?: string
-          calories: number
-          protein: number
-          carbs: number
-          fat: number
+          consumed_at: string | null
           created_at: string
+          id: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          name: string
+          notes: string | null
+          nutrition_plan_id: string | null
+          photo_url: string | null
+          planned_date: string
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_protein: number | null
           updated_at: string
-          completed: boolean
-          notes?: string
-          nutrition_plan_id?: string
+          user_id: string
         }
-        Insert: Omit<Tables['meals']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['meals']['Insert']>
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          id?: string
+          meal_type: Database["public"]["Enums"]["meal_type"]
+          name: string
+          notes?: string | null
+          nutrition_plan_id?: string | null
+          photo_url?: string | null
+          planned_date: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          id?: string
+          meal_type?: Database["public"]["Enums"]["meal_type"]
+          name?: string
+          notes?: string | null
+          nutrition_plan_id?: string | null
+          photo_url?: string | null
+          planned_date?: string
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_protein?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meals_nutrition_plan_id_fkey"
+            columns: ["nutrition_plan_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nutrition_plans: {
         Row: {
+          created_at: string
+          daily_calories: number
+          daily_carbs: number
+          daily_fat: number
+          daily_protein: number
+          end_date: string | null
           id: string
-          user_id: string
+          is_active: boolean | null
           name: string
           start_date: string
-          end_date: string
-          daily_calories: number
-          protein_target: number
-          carbs_target: number
-          fat_target: number
-          created_at: string
           updated_at: string
-          status: string
+          user_id: string
         }
-        Insert: Omit<Tables['nutrition_plans']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['nutrition_plans']['Insert']>
+        Insert: {
+          created_at?: string
+          daily_calories: number
+          daily_carbs: number
+          daily_fat: number
+          daily_protein: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          start_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_calories?: number
+          daily_carbs?: number
+          daily_fat?: number
+          daily_protein?: number
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
-          id: string
-          user_id: string
-          full_name: string
-          avatar_url?: string
-          gender?: string
-          birth_date?: string
-          height?: number
-          weight?: number
-          activity_level?: string
-          fitness_goal?: string
+          age: number | null
+          available_equipment:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          avatar_url: string | null
           created_at: string
+          experience_level:
+            | Database["public"]["Enums"]["experience_level"]
+            | null
+          fitness_goal: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name: string
+          height: number | null
+          id: string
           updated_at: string
-          email: string
+          user_id: string
+          weekly_availability: Json | null
+          weight: number | null
         }
-        Insert: Omit<Tables['profiles']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['profiles']['Insert']>
+        Insert: {
+          age?: number | null
+          available_equipment?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          avatar_url?: string | null
+          created_at?: string
+          experience_level?:
+            | Database["public"]["Enums"]["experience_level"]
+            | null
+          fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name: string
+          height?: number | null
+          id?: string
+          updated_at?: string
+          user_id: string
+          weekly_availability?: Json | null
+          weight?: number | null
+        }
+        Update: {
+          age?: number | null
+          available_equipment?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          avatar_url?: string | null
+          created_at?: string
+          experience_level?:
+            | Database["public"]["Enums"]["experience_level"]
+            | null
+          fitness_goal?: Database["public"]["Enums"]["fitness_goal"] | null
+          full_name?: string
+          height?: number | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+          weekly_availability?: Json | null
+          weight?: number | null
+        }
+        Relationships: []
       }
       progress_photos: {
         Row: {
-          id: string
-          user_id: string
-          photo_url: string
-          date: string
-          category: string
-          notes?: string
           created_at: string
+          id: string
+          notes: string | null
+          photo_type: string | null
+          photo_url: string
+          recorded_date: string
+          user_id: string
         }
-        Insert: Omit<Tables['progress_photos']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['progress_photos']['Insert']>
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_type?: string | null
+          photo_url: string
+          recorded_date: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          photo_type?: string | null
+          photo_url?: string
+          recorded_date?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_achievements: {
         Row: {
-          id: string
-          user_id: string
           achievement_id: string
           earned_at: string
+          id: string
+          user_id: string
         }
-        Insert: Omit<Tables['user_achievements']['Row'], 'id'>
-        Update: Partial<Tables['user_achievements']['Insert']>
+        Insert: {
+          achievement_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_goals: {
         Row: {
-          id: string
-          user_id: string
+          created_at: string
+          current_value: number | null
           goal_type: string
+          id: string
+          is_active: boolean | null
+          target_date: string | null
           target_value: number
-          current_value: number
-          start_date: string
-          target_date: string
-          status: string
-          notes?: string
+          updated_at: string
+          user_id: string
         }
-        Insert: Omit<Tables['user_goals']['Row'], 'id'>
-        Update: Partial<Tables['user_goals']['Insert']>
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          goal_type: string
+          id?: string
+          is_active?: boolean | null
+          target_date?: string | null
+          target_value: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          goal_type?: string
+          id?: string
+          is_active?: boolean | null
+          target_date?: string | null
+          target_value?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_settings: {
         Row: {
-          id: string
-          user_id: string
-          language: string
-          theme: string
-          notifications_enabled: boolean
-          measurement_unit: string
-          timezone: string
-          workout_reminder: boolean
-          meal_reminder: boolean
-          hydration_reminder: boolean
           created_at: string
+          id: string
+          notification_email: boolean | null
+          notification_hydration: boolean | null
+          notification_meal: boolean | null
+          notification_progress: boolean | null
+          notification_workout: boolean | null
+          theme_preference: string | null
+          timezone: string | null
+          units_distance: string | null
+          units_weight: string | null
           updated_at: string
-          reminder_frequency: string
+          user_id: string
         }
-        Insert: Omit<Tables['user_settings']['Row'], 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Tables['user_settings']['Insert']>
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_email?: boolean | null
+          notification_hydration?: boolean | null
+          notification_meal?: boolean | null
+          notification_progress?: boolean | null
+          notification_workout?: boolean | null
+          theme_preference?: string | null
+          timezone?: string | null
+          units_distance?: string | null
+          units_weight?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_email?: boolean | null
+          notification_hydration?: boolean | null
+          notification_meal?: boolean | null
+          notification_progress?: boolean | null
+          notification_workout?: boolean | null
+          theme_preference?: string | null
+          timezone?: string | null
+          units_distance?: string | null
+          units_weight?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       weight_progress: {
         Row: {
-          id: string
-          user_id: string
-          weight: number
-          date: string
-          notes?: string
           created_at: string
+          id: string
+          notes: string | null
+          recorded_date: string
+          user_id: string
+          weight_kg: number
         }
-        Insert: Omit<Tables['weight_progress']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['weight_progress']['Insert']>
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_date: string
+          user_id: string
+          weight_kg: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          recorded_date?: string
+          user_id?: string
+          weight_kg?: number
+        }
+        Relationships: []
       }
       workout_exercises: {
         Row: {
-          id: string
-          workout_id: string
-          exercise_id: string
-          sets: number
-          reps: number
-          weight?: number
-          duration?: number
-          rest_time: number
-          notes?: string
-          order_index: number
+          completed: boolean | null
           created_at: string
-          completed: boolean
+          duration_seconds: number | null
+          exercise_id: string
+          id: string
+          notes: string | null
+          order_index: number
+          reps: number | null
+          rest_seconds: number | null
+          sets: number | null
+          weight_kg: number | null
+          workout_id: string
         }
-        Insert: Omit<Tables['workout_exercises']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['workout_exercises']['Insert']>
+        Insert: {
+          completed?: boolean | null
+          created_at?: string
+          duration_seconds?: number | null
+          exercise_id: string
+          id?: string
+          notes?: string | null
+          order_index: number
+          reps?: number | null
+          rest_seconds?: number | null
+          sets?: number | null
+          weight_kg?: number | null
+          workout_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string
+          duration_seconds?: number | null
+          exercise_id?: string
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_seconds?: number | null
+          sets?: number | null
+          weight_kg?: number | null
+          workout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workout_exercises_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workout_exercises_workout_id_fkey"
+            columns: ["workout_id"]
+            isOneToOne: false
+            referencedRelation: "workouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workouts: {
         Row: {
-          id: string
-          user_id: string
-          name: string
-          description?: string
-          duration: number
-          calories_burned?: number
-          workout_type: string
-          difficulty: string
-          equipment_needed: string[]
+          calories_burned: number | null
+          completed_at: string | null
           created_at: string
-          scheduled_date?: string
-          completed: boolean
-          notes?: string
+          duration_minutes: number
+          equipment_used: Database["public"]["Enums"]["equipment_type"][] | null
+          generated_automatically: boolean | null
+          id: string
+          intensity_level: number | null
+          is_favorite: boolean | null
+          is_template: boolean | null
+          name: string
+          updated_at: string
+          user_id: string
+          workout_type: Database["public"]["Enums"]["workout_type"]
         }
-        Insert: Omit<Tables['workouts']['Row'], 'id' | 'created_at'>
-        Update: Partial<Tables['workouts']['Insert']>
+        Insert: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes: number
+          equipment_used?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          generated_automatically?: boolean | null
+          id?: string
+          intensity_level?: number | null
+          is_favorite?: boolean | null
+          is_template?: boolean | null
+          name: string
+          updated_at?: string
+          user_id: string
+          workout_type: Database["public"]["Enums"]["workout_type"]
+        }
+        Update: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          equipment_used?:
+            | Database["public"]["Enums"]["equipment_type"][]
+            | null
+          generated_automatically?: boolean | null
+          id?: string
+          intensity_level?: number | null
+          is_favorite?: boolean | null
+          is_template?: boolean | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+          workout_type?: Database["public"]["Enums"]["workout_type"]
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -320,14 +836,121 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
+      achievement_type:
+        | "workout_streak"
+        | "weight_goal"
+        | "hydration_goal"
+        | "workout_count"
+        | "consistency"
+      equipment_type:
+        | "full_gym"
+        | "dumbbells"
+        | "bodyweight"
+        | "resistance_bands"
+        | "none"
+      experience_level: "beginner" | "intermediate" | "advanced"
+      fitness_goal:
+        | "lose_weight"
+        | "gain_muscle"
+        | "maintain_weight"
+        | "increase_endurance"
+      meal_type:
+        | "breakfast"
+        | "morning_snack"
+        | "lunch"
+        | "afternoon_snack"
+        | "dinner"
+        | "evening_snack"
+      workout_type: "strength" | "cardio" | "hiit" | "flexibility"
+    }
+    CompositeTypes: {
       [_ in never]: never
     }
   }
 }
 
-export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row']
-export type Insertable<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert']
-export type Updatable<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update']
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
@@ -365,6 +988,37 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      achievement_type: [
+        "workout_streak",
+        "weight_goal",
+        "hydration_goal",
+        "workout_count",
+        "consistency",
+      ],
+      equipment_type: [
+        "full_gym",
+        "dumbbells",
+        "bodyweight",
+        "resistance_bands",
+        "none",
+      ],
+      experience_level: ["beginner", "intermediate", "advanced"],
+      fitness_goal: [
+        "lose_weight",
+        "gain_muscle",
+        "maintain_weight",
+        "increase_endurance",
+      ],
+      meal_type: [
+        "breakfast",
+        "morning_snack",
+        "lunch",
+        "afternoon_snack",
+        "dinner",
+        "evening_snack",
+      ],
+      workout_type: ["strength", "cardio", "hiit", "flexibility"],
+    },
   },
 } as const

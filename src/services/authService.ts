@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
-export type Profile = Tables['profiles'];
+export type Profile = Tables<'profiles'>;
 
 export interface SignUpData {
   email: string;
