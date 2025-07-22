@@ -156,9 +156,13 @@ export const authService = {
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
+        if (error.code === 'PGRST116') {
+          console.log('Perfil não encontrado para o usuário:', userId);
+          return null;
+        }
         console.error('Erro ao obter perfil:', error);
         return null;
       }

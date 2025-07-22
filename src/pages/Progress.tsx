@@ -1,246 +1,121 @@
+// src/pages/Progress.tsx
 import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { useProgress } from '@/contexts/ProgressContext';
-import { Medidas, MetaProgresso } from '@/types/progress';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { Scale, Target, Activity, Trophy, Calendar, ChevronRight } from 'lucide-react';
+import { useForm, SubmitHandler } from 'react-hook-form';
 
-interface ProgressDisplayProps {
-  registros: any[];
-  metas: any[];
-  estatisticas: any;
-}
-
-const ProgressDisplay: React.FC<ProgressDisplayProps> = ({ registros, metas, estatisticas }) => {
-  const dadosGrafico = registros.map(registro => ({
-    data: new Date(registro.data).toLocaleDateString(),
-    peso: registro.peso,
-    imc: registro.imc
-  }));
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Seu Progresso</h2>
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => {}}>
-            Ver Histórico
-          </Button>
-          <Button onClick={() => {}}>
-            Adicionar Registro
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Scale className="h-5 w-5" />
-              Média de Peso
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{estatisticas.mediaPeso.toFixed(1)} kg</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Dias Treinados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{estatisticas.diasTreinados}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Metas Concluídas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{estatisticas.metasConcluidas}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Sequência Atual
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{estatisticas.diasConsecutivos} dias</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gráfico de Evolução */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Evolução de Peso</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px] w-full">
-            <LineChart
-              width={800}
-              height={300}
-              data={dadosGrafico}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="data" />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
-              <Tooltip />
-              <Legend />
-              <Line
-                yAxisId="left"
-                type="monotone"
-                dataKey="peso"
-                stroke="#8884d8"
-                name="Peso (kg)"
-              />
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="imc"
-                stroke="#82ca9d"
-                name="IMC"
-              />
-            </LineChart>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Metas Ativas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Metas Ativas</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {metas.filter(meta => !meta.concluida).map((meta, index) => (
-              <div
-                key={meta.id}
-                className="flex items-start gap-4 p-4 rounded-lg border"
-              >
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-full bg-primary/10">
-                  <Target className="h-6 w-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium">{meta.descricao}</h3>
-                  <div className="mt-2 flex items-center gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Valor Inicial</p>
-                      <p className="font-medium">{meta.valorInicial} {meta.unidade}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Valor Atual</p>
-                      <p className="font-medium">{meta.valorAtual} {meta.unidade}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Meta</p>
-                      <p className="font-medium">{meta.valorAlvo} {meta.unidade}</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <div className="h-2 bg-muted rounded-full">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{
-                          width: `${Math.min(100, (meta.valorAtual - meta.valorInicial) / (meta.valorAlvo - meta.valorInicial) * 100)}%`
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+type WeightFormInput = {
+    weight_kg: number;
+    recorded_date: string;
 };
 
 const Progress = () => {
-  const {
-    registros,
-    metas,
-    estatisticas,
-    adicionarRegistro,
-    adicionarMeta,
-    calcularIMC
-  } = useProgress();
+    const { registros, metas, estatisticas, isLoading, adicionarRegistro } = useProgress();
+    const { register, handleSubmit, reset } = useForm<WeightFormInput>();
 
-  const [novasMedidas, setNovasMedidas] = useState<Medidas>({
-    peso: 0,
-    altura: 0
-  });
+    const dadosGrafico = registros.map(registro => ({
+        // Formata a data para melhor visualização no gráfico
+        data: new Date(registro.recorded_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+        peso: registro.weight_kg,
+    }));
 
-  const [novaMeta, setNovaMeta] = useState<Omit<MetaProgresso, 'id' | 'progresso'>>({
-    userId: 'user123', // Temporário
-    tipo: 'peso',
-    descricao: '',
-    valorInicial: 0,
-    valorAlvo: 0,
-    valorAtual: 0,
-    unidade: 'kg',
-    dataInicio: new Date(),
-    dataAlvo: new Date(),
-    concluida: false
-  });
+    const onAddWeight: SubmitHandler<WeightFormInput> = async (data) => {
+        await adicionarRegistro({
+            weight_kg: Number(data.weight_kg),
+            recorded_date: new Date(data.recorded_date).toISOString(),
+            notes: null // ou adicione um campo de notas
+        });
+        reset(); // Limpa o formulário após o envio
+    };
+    
+    if (isLoading) {
+        return <DashboardLayout><div>Carregando progresso...</div></DashboardLayout>
+    }
 
-  const handleSubmitMedidas = (e: React.FormEvent) => {
-    e.preventDefault();
-    adicionarRegistro({
-      userId: 'user123', // Temporário
-      data: new Date(),
-      medidas: novasMedidas,
-      peso: novasMedidas.peso,
-      humor: 'bom',
-      energia: 'media',
-      sono: 8,
-      hidratacao: 2000
-    });
-  };
+    return (
+        <DashboardLayout>
+            <div className="space-y-6">
+                <h2 className="text-2xl font-bold">Seu Progresso</h2>
 
-  const handleSubmitMeta = (e: React.FormEvent) => {
-    e.preventDefault();
-    adicionarMeta(novaMeta);
-  };
+                {/* Cards de Estatísticas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* ... os cards de estatísticas podem ser mantidos como estão ... */}
+                    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Scale className="h-5 w-5" />Média de Peso</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{estatisticas.mediaPeso?.toFixed(1) ?? 0} kg</p></CardContent></Card>
+                    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5" />Dias Treinados</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{estatisticas.diasTreinados ?? 0}</p></CardContent></Card>
+                    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Metas Concluídas</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{estatisticas.metasConcluidas ?? 0}</p></CardContent></Card>
+                    <Card><CardHeader><CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Metas Ativas</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold">{estatisticas.metasEmAndamento ?? 0}</p></CardContent></Card>
+                </div>
+                
+                {/* Gráfico e Adição de Registro */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <Card className="lg:col-span-2">
+                        <CardHeader><CardTitle>Evolução de Peso</CardTitle></CardHeader>
+                        <CardContent>
+                            <ResponsiveContainer width="100%" height={300}>
+                                {registros.length > 0 ? (
+                                    <LineChart data={dadosGrafico} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="data" />
+                                        <YAxis domain={['dataMin - 2', 'dataMax + 2']} />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Line type="monotone" dataKey="peso" stroke="#8884d8" name="Peso (kg)" activeDot={{ r: 8 }} />
+                                    </LineChart>
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                                        Adicione seu primeiro registro de peso para ver o gráfico.
+                                    </div>
+                                )}
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-8">
-        <ProgressDisplay
-          registros={registros}
-          metas={metas}
-          estatisticas={estatisticas}
-        />
-      </div>
-    </DashboardLayout>
-  );
+                    <Card>
+                        <CardHeader><CardTitle>Adicionar Novo Peso</CardTitle></CardHeader>
+                        <form onSubmit={handleSubmit(onAddWeight)}>
+                            <CardContent className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="weight_kg">Peso (kg)</Label>
+                                    <Input id="weight_kg" type="number" step="0.1" required {...register("weight_kg")} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="recorded_date">Data</Label>
+                                    <Input id="recorded_date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} {...register("recorded_date")} />
+                                </div>
+                            </CardContent>
+                            <CardFooter>
+                                <Button type="submit" className="w-full">Salvar Registro</Button>
+                            </CardFooter>
+                        </form>
+                    </Card>
+                </div>
+
+                {/* Metas Ativas */}
+                <Card>
+                    <CardHeader><CardTitle>Metas Ativas</CardTitle></CardHeader>
+                    <CardContent>
+                        {metas.length > 0 ? (
+                            <div className="space-y-4">
+                                {metas.filter(meta => !meta.is_active || meta.current_value < meta.target_value).map((meta) => (
+                                    <div key={meta.id} className="p-4 rounded-lg border">
+                                        {/* ... Renderização da meta ... */}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-muted-foreground">Você ainda não tem metas ativas.</p>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </DashboardLayout>
+    );
 };
 
-export default Progress; 
+export default Progress;

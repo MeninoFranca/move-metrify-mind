@@ -1,11 +1,23 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/use-theme';
-import { Sun, Moon, Bell } from 'lucide-react';
+import { Sun, Moon, Bell, User } from 'lucide-react';
 import MobileMenu from './MobileMenu';
+import { useAuth } from '@/contexts/AuthContext'; // 1. Importe o useAuth
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
+  const { user, profile, signOut } = useAuth(); // 2. Obtenha os dados do usuário e a função signOut
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-4 bg-background">
@@ -33,17 +45,41 @@ const Header = () => {
           )}
         </Button>
 
-        {/* Avatar do Usuário */}
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <img
-            src="https://github.com/shadcn.png"
-            alt="Avatar do usuário"
-            className="h-8 w-8 rounded-full"
-          />
-        </Button>
+        {/* Menu do Usuário */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={profile?.avatar_url || ''} alt={profile?.full_name || 'Avatar'} />
+                <AvatarFallback>
+                  {profile?.full_name ? profile.full_name.charAt(0).toUpperCase() : <User />}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{profile?.full_name}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/profile">Perfil</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+               <Link to="/settings">Configurações</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOut}>
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
 };
 
-export default Header; 
+export default Header;

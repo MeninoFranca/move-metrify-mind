@@ -1,12 +1,22 @@
+
 import React from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { LineChart, Dumbbell, Droplets, Pizza, Bell } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext'; // 1. Importe o useAuth
 
 const Dashboard = () => {
+  const { profile } = useAuth(); // 2. Obtenha o perfil do usuário
+
   return (
     <DashboardLayout>
+      {/* 3. Adicione a saudação personalizada */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Olá, {profile?.full_name || 'Usuário'}!</h1>
+        <p className="text-muted-foreground">Aqui está um resumo da sua jornada hoje.</p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Card de Resumo Diário */}
         <Card>
@@ -126,3 +136,5 @@ const Dashboard = () => {
 };
 
 export default Dashboard; 
+
+
