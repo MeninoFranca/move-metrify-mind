@@ -1,25 +1,66 @@
 // src/services/workoutService.ts
 import { supabase } from '@/integrations/supabase/client';
-import { Exercise, WorkoutPlan } from '@/types/workout';
-import { TablesInsert } from '@/integrations/supabase/types';
+import { Tables, TablesInsert, Enums } from '@/integrations/supabase/types';
+
+// Tipos para facilitar
+export type Workout = Tables<'workouts'>;
+export type Exercise = Tables<'exercises'>;
+export type WorkoutWithExercises = Workout & {
+  workout_exercises: Array<{
+    sets: number;
+    reps: number;
+    exercises: Exercise;
+  }>;
+};
 
 export const workoutService = {
-  async getExercises(): Promise<Exercise[]> {
+  /**
+   * Busca todos os exercícios da biblioteca pública.
+   */
+  async getExerciseLibrary(): Promise<Exercise[]> {
     const { data, error } = await supabase.from('exercises').select('*');
     if (error) {
-      console.error('Error fetching exercises:', error);
-      return [];
+      console.error('Erro ao buscar biblioteca de exercícios:', error);
+      throw error;
     }
-    // É importante garantir que o tipo 'Exercise' em '@/types/workout'
-    // seja compatível com a estrutura da tabela 'exercises' do seu banco de dados.
-    return data as any as Exercise[];
+    return data;
   },
 
-  async saveWorkout(workout: Omit<TablesInsert<'workouts'>, 'user_id'>, exercises: { exercise_id: string, sets: number, reps: number, order_index: number }[]) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not authenticated");
+  /**
+   * Busca os treinos de um usuário específico.
+   */
+  async getUserWorkouts(userId: string): Promise<WorkoutWithExercises[]> {
+    const { data, error } = await supabase
+      .from('workouts')
+      .select(`
+        *,
+        workout_exercises (
+          sets,
+          reps,
+          exercises (*)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
 
-    // Insere o treino
+    if (error) {
+      console.error('Erro ao buscar treinos do usuário:', error);
+      throw error;
+    }
+    return data as any;
+  },
+
+  /**
+   * Salva um novo treino e seus exercícios associados.
+   */
+  async saveWorkout(
+    workout: Omit<TablesInsert<'workouts'>, 'user_id' | 'id'>, 
+    exercises: Array<Omit<TablesInsert<'workout_exercises'>, 'workout_id'>>
+  ): Promise<Workout> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuário não autenticado");
+
+    // 1. Insere o treino principal
     const { data: workoutData, error: workoutError } = await supabase
       .from('workouts')
       .insert({ ...workout, user_id: user.id })
@@ -27,27 +68,23 @@ export const workoutService = {
       .single();
 
     if (workoutError) {
-      console.error('Error saving workout:', workoutError);
+      console.error('Erro ao salvar o treino:', workoutError);
       throw workoutError;
     }
 
-    // Insere os exercícios do treino
-    const workoutExercises = exercises.map(e => ({
+    // 2. Associa os exercícios ao treino recém-criado
+    const workoutExercisesToInsert = exercises.map(e => ({
+      ...e,
       workout_id: workoutData.id,
-      exercise_id: e.exercise_id,
-      sets: e.sets,
-      reps: e.reps,
-      order_index: e.order_index,
     }));
 
     const { error: exercisesError } = await supabase
       .from('workout_exercises')
-      .insert(workoutExercises);
+      .insert(workoutExercisesToInsert);
 
     if (exercisesError) {
-      console.error('Error saving workout exercises:', exercisesError);
-      // Aqui você poderia adicionar uma lógica para deletar o workout que foi criado
-      // para manter a consistência dos dados.
+      console.error('Erro ao salvar os exercícios do treino:', exercisesError);
+      // Idealmente, aqui você deletaria o 'workout' criado para evitar dados órfãos
       throw exercisesError;
     }
 

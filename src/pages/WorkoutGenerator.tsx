@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { Dumbbell, Clock, Target } from 'lucide-react';
+import { Dumbbell, Clock, Target, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const WorkoutGenerator = () => {
-  const { generateWorkout, saveWorkout, setCurrentWorkout, currentWorkout } = useWorkout();
+  const { generateWorkout, saveCurrentWorkout, currentGeneratedWorkout, isLoading } = useWorkout();
   const navigate = useNavigate();
   const [preferences, setPreferences] = useState<WorkoutPreferences>({
     preferredTypes: ['strength'],
-    availableEquipment: ['home'],
+    availableEquipment: ['bodyweight', 'none'],
     timePerWorkout: 45,
     fitnessLevel: 'beginner',
     targetMuscleGroups: [],
@@ -31,8 +31,10 @@ const WorkoutGenerator = () => {
 
   const equipmentOptions: { value: Equipment; label: string }[] = [
     { value: 'none', label: 'Nenhum' },
-    { value: 'home', label: 'Em Casa' },
-    { value: 'gym', label: 'Academia' },
+    { value: 'bodyweight', label: 'Peso Corporal' },
+    { value: 'dumbbells', label: 'Halteres' },
+    { value: 'resistance_bands', label: 'Faixas Elásticas' },
+    { value: 'full_gym', label: 'Academia' },
   ];
 
   const muscleGroups: { value: MuscleGroup; label: string }[] = [
@@ -52,25 +54,33 @@ const WorkoutGenerator = () => {
   ];
 
   const handleGenerateWorkout = () => {
-    const workout = generateWorkout(preferences);
-    saveWorkout(workout);
-    setCurrentWorkout(workout);
+    generateWorkout(preferences);
   };
-
-  const handleStartWorkout = () => {
-    if (currentWorkout) {
-      navigate(`/workouts/${currentWorkout.id}`);
-    }
-  };
+  
+  const handleSaveAndStart = async () => {
+      await saveCurrentWorkout();
+      // Navega para uma página de "meus treinos" após salvar
+      navigate('/workouts'); 
+  }
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
-        {currentWorkout ? (
-          <WorkoutDisplay
-            workout={currentWorkout}
-            onStartWorkout={handleStartWorkout}
-          />
+        {currentGeneratedWorkout ? (
+          <div>
+            <WorkoutDisplay
+              workout={currentGeneratedWorkout}
+            />
+            <div className="mt-6 flex justify-center gap-4">
+                <Button size="lg" onClick={handleSaveAndStart} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Salvar Treino
+                </Button>
+                <Button size="lg" variant="outline" onClick={handleGenerateWorkout} disabled={isLoading}>
+                    Gerar Outro
+                </Button>
+            </div>
+          </div>
         ) : (
           <>
             <h1 className="text-3xl font-bold">Gerador de Treinos</h1>
@@ -213,13 +223,14 @@ const WorkoutGenerator = () => {
               </Card>
             </div>
 
-            {/* Botão Gerar Treino */}
             <div className="flex justify-center mt-8">
               <Button
                 size="lg"
                 onClick={handleGenerateWorkout}
                 className="w-full max-w-md"
+                disabled={isLoading}
               >
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Gerar Treino Personalizado
               </Button>
             </div>
@@ -230,4 +241,4 @@ const WorkoutGenerator = () => {
   );
 };
 
-export default WorkoutGenerator; 
+export default WorkoutGenerator;
