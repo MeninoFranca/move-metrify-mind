@@ -7,6 +7,12 @@ export type Meal = Tables<'meals'> & { meal_foods: MealFood[] };
 export type FoodItem = Tables<'food_items'>;
 export type MealFood = Tables<'meal_foods'> & { food_items: FoodItem };
 
+interface NutritionTargets {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
 
 export const nutritionService = {
   /**
@@ -18,8 +24,8 @@ export const nutritionService = {
     const { data, error } = await supabase
       .from('food_items')
       .select('*')
-      .ilike('name', `%${searchTerm}%`) // Usando ilike para busca case-insensitive
-      .limit(10); // Limita a 10 resultados para performance
+      .ilike('name', `%${searchTerm}%`)
+      .limit(10);
 
     if (error) {
       console.error('Erro ao buscar alimentos:', error);
@@ -135,7 +141,6 @@ export const nutritionService = {
         };
     }).filter(Boolean) as TablesInsert<'meal_foods'>[];
 
-
     // 4. Insere os alimentos na tabela de junção
     const { error: mealFoodsError } = await supabase
       .from('meal_foods')
@@ -143,7 +148,6 @@ export const nutritionService = {
 
     if (mealFoodsError) {
       console.error('Erro ao salvar alimentos da refeição:', mealFoodsError);
-      // Opcional: deletar a refeição criada para evitar dados órfãos
       await supabase.from('meals').delete().eq('id', mealData.id);
       throw mealFoodsError;
     }
@@ -158,5 +162,67 @@ export const nutritionService = {
     if (finalMealError) throw finalMealError;
 
     return finalMealData as any;
+  },
+
+  /**
+   * Gera um plano nutricional completo baseado nas metas do usuário
+   */
+  async generateAndSaveFullDayPlan(userId: string, targets: NutritionTargets): Promise<NutritionPlan> {
+    // 1. Criar o plano nutricional
+    const planData: TablesInsert<'nutrition_plans'> = {
+      user_id: userId,
+      name: `Plano Personalizado - ${new Date().toLocaleDateString('pt-BR')}`,
+      daily_calories: targets.calories,
+      daily_protein: targets.protein,
+      daily_carbs: targets.carbs,
+      daily_fat: targets.fat,
+      start_date: new Date().toISOString().split('T')[0],
+      is_active: true
+    };
+
+    const plan = await this.saveNutritionPlan(planData);
+
+    // 2. Buscar alimentos disponíveis
+    const { data: availableFoods, error: foodsError } = await supabase
+      .from('food_items')
+      .select('*')
+      .limit(50);
+
+    if (foodsError) throw foodsError;
+
+    // 3. Gerar refeições baseadas nas metas
+    const mealTypes: Array<{ type: any; calorieRatio: number; name: string }> = [
+      { type: 'breakfast', calorieRatio: 0.25, name: 'Café da Manhã Energético' },
+      { type: 'morning_snack', calorieRatio: 0.10, name: 'Lanche da Manhã' },
+      { type: 'lunch', calorieRatio: 0.35, name: 'Almoço Balanceado' },
+      { type: 'afternoon_snack', calorieRatio: 0.10, name: 'Lanche da Tarde' },
+      { type: 'dinner', calorieRatio: 0.20, name: 'Jantar Leve' }
+    ];
+
+    for (const mealType of mealTypes) {
+      const mealCalories = targets.calories * mealType.calorieRatio;
+      
+      // Selecionar alimentos aleatórios para a refeição
+      const selectedFoods = availableFoods
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.floor(Math.random() * 3) + 2); // 2-4 alimentos por refeição
+
+      const mealData: TablesInsert<'meals'> = {
+        user_id: userId,
+        nutrition_plan_id: plan.id,
+        meal_type: mealType.type,
+        name: mealType.name,
+        planned_date: new Date().toISOString().split('T')[0]
+      };
+
+      const foodsData = selectedFoods.map(food => ({
+        food_item_id: food.id,
+        quantity_grams: Math.floor(Math.random() * 100) + 50 // 50-150g
+      }));
+
+      await this.saveMeal(mealData, foodsData);
+    }
+
+    return plan;
   }
 };
