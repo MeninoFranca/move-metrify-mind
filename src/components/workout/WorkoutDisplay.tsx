@@ -7,11 +7,15 @@ import { useNavigate } from 'react-router-dom';
 
 interface WorkoutDisplayProps {
   workout: WorkoutPlan;
-  onStartWorkout?: () => void;
 }
 
-const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ workout, onStartWorkout }) => {
+const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ workout }) => {
   const navigate = useNavigate();
+
+  const handleStartWorkout = () => {
+      // Navega para a nova página de execução
+      navigate('/workout/execute');
+  }
 
   return (
     <div className="space-y-6">
@@ -21,14 +25,14 @@ const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ workout, onStartWorkout
           <Button variant="outline" onClick={() => navigate('/workouts/history')}>
             Ver Histórico
           </Button>
-          <Button onClick={onStartWorkout}>
+          <Button onClick={handleStartWorkout}>
             Começar Treino
             <ChevronRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Informações do Treino */}
+      {/* ... (resto do componente inalterado) ... */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader>
@@ -112,4 +116,4 @@ const WorkoutDisplay: React.FC<WorkoutDisplayProps> = ({ workout, onStartWorkout
   );
 };
 
-export default WorkoutDisplay; 
+export default WorkoutDisplay;

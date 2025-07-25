@@ -1,136 +1,84 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Alimento, Refeicao } from '@/types/nutrition';
-import { Camera, Search, Plus, Minus, X } from 'lucide-react';
-import { buscarAlimentos, calcularMacrosRefeicao, calcularCaloriasRefeicao } from '@/services/foodService';
+import { FoodItem } from '@/services/nutritionService';
+import { Search, Plus, X } from 'lucide-react';
+import { nutritionService } from '@/services/nutritionService';
+import { useNutrition } from '@/contexts/NutritionContext';
+import { TablesInsert } from '@/integrations/supabase/types';
+import { debounce } from 'lodash';
 
-interface MealRegistrationProps {
-  onRegistrar: (refeicao: Refeicao) => void;
-}
-
-const MealRegistration: React.FC<MealRegistrationProps> = ({ onRegistrar }) => {
-  const [foto, setFoto] = useState<string | null>(null);
+const MealRegistration: React.FC = () => {
+  const { addMeal } = useNutrition();
+  const [isOpen, setIsOpen] = useState(false);
   const [termoBusca, setTermoBusca] = useState('');
-  const [resultadosBusca, setResultadosBusca] = useState<Alimento[]>([]);
-  const [alimentosSelecionados, setAlimentosSelecionados] = useState<{ alimento: Alimento; quantidade: number }[]>([]);
+  const [resultadosBusca, setResultadosBusca] = useState<FoodItem[]>([]);
+  const [alimentosSelecionados, setAlimentosSelecionados] = useState<FoodItem[]>([]);
+  
+  const debouncedSearch = useCallback(
+    debounce(async (term: string) => {
+      const results = await nutritionService.searchFoodLibrary(term);
+      setResultadosBusca(results);
+    }, 300),
+    []
+  );
 
-  const handleBuscarAlimentos = (termo: string) => {
-    setTermoBusca(termo);
-    const resultados = buscarAlimentos(termo);
-    setResultadosBusca(resultados);
+  const handleBuscarAlimentos = (term: string) => {
+    setTermoBusca(term);
+    debouncedSearch(term);
   };
 
-  const handleAdicionarAlimento = (alimento: Alimento) => {
-    setAlimentosSelecionados(prev => [
-      ...prev,
-      { alimento, quantidade: alimento.porcao }
-    ]);
+  const handleAdicionarAlimento = (alimento: FoodItem) => {
+    setAlimentosSelecionados(prev => [...prev, alimento]);
     setResultadosBusca([]);
     setTermoBusca('');
   };
 
-  const handleRemoverAlimento = (index: number) => {
-    setAlimentosSelecionados(prev => prev.filter((_, i) => i !== index));
+  const handleRemoverAlimento = (id: string) => {
+    setAlimentosSelecionados(prev => prev.filter(item => item.id !== id));
   };
+  
+  const resetForm = () => {
+      setTermoBusca('');
+      setResultadosBusca([]);
+      setAlimentosSelecionados([]);
+      setIsOpen(false);
+  }
 
-  const handleAtualizarQuantidade = (index: number, quantidade: number) => {
-    setAlimentosSelecionados(prev => prev.map((item, i) => 
-      i === index ? { ...item, quantidade } : item
-    ));
-  };
-
-  const handleUploadFoto = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFoto(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleRegistrar = () => {
+  const handleRegistrar = async () => {
     if (alimentosSelecionados.length === 0) return;
 
-    const refeicao: Refeicao = {
-      id: Date.now().toString(),
-      nome: 'Refeição Registrada',
-      horario: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      alimentos: alimentosSelecionados,
-      calorias: calcularCaloriasRefeicao(alimentosSelecionados),
-      macros: calcularMacrosRefeicao(alimentosSelecionados),
-      foto
+    const mealData: Omit<TablesInsert<'meals'>, 'id' | 'user_id'> = {
+        name: `Refeição de ${new Date().toLocaleDateString()}`,
+        meal_type: 'lunch', // Poderia ser selecionável
+        planned_date: new Date().toISOString(),
     };
 
-    onRegistrar(refeicao);
-    setAlimentosSelecionados([]);
-    setFoto(null);
+    const foodsData = alimentosSelecionados.map(food => ({
+        food_item_id: food.id,
+        quantity_grams: 100, // Valor padrão, poderia ser ajustável
+    }));
+
+    await addMeal(mealData, foodsData);
+    resetForm();
   };
+  
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
           Registrar Refeição
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+      <SheetContent side="right" className="w-[400px] sm:w-[540px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Registrar Refeição</SheetTitle>
         </SheetHeader>
-        <div className="mt-6 space-y-6">
-          {/* Upload de Foto */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Foto da Refeição
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-4">
-                {foto ? (
-                  <div className="relative">
-                    <img
-                      src={foto}
-                      alt="Refeição"
-                      className="w-full max-w-sm rounded-lg"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={() => setFoto(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <label className="flex flex-col items-center gap-2 p-8 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50">
-                    <Camera className="h-8 w-8 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Clique para adicionar foto
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleUploadFoto}
-                    />
-                  </label>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Busca de Alimentos */}
+        <div className="mt-6 space-y-6 pb-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -140,116 +88,57 @@ const MealRegistration: React.FC<MealRegistrationProps> = ({ onRegistrar }) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Buscar alimento..."
+                <Input
+                    placeholder="Buscar por frango, arroz, etc..."
                     value={termoBusca}
                     onChange={(e) => handleBuscarAlimentos(e.target.value)}
-                  />
-                </div>
+                />
 
-                {/* Resultados da Busca */}
                 {resultadosBusca.length > 0 && (
-                  <div className="border rounded-lg divide-y">
+                  <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
                     {resultadosBusca.map((alimento) => (
                       <div
                         key={alimento.id}
-                        className="p-2 hover:bg-muted cursor-pointer"
+                        className="p-2 hover:bg-muted cursor-pointer flex justify-between items-center"
                         onClick={() => handleAdicionarAlimento(alimento)}
                       >
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-medium">{alimento.nome}</p>
+                        <div>
+                            <p className="font-medium">{alimento.name}</p>
                             <p className="text-sm text-muted-foreground">
-                              {alimento.calorias} kcal / {alimento.porcao}{alimento.unidade}
+                              {alimento.calories_per_100g} kcal / 100g
                             </p>
-                          </div>
-                          <Plus className="h-4 w-4" />
                         </div>
+                        <Plus className="h-4 w-4" />
                       </div>
                     ))}
-                  </div>
-                )}
-
-                {/* Alimentos Selecionados */}
-                {alimentosSelecionados.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>Alimentos Selecionados</Label>
-                    <div className="border rounded-lg divide-y">
-                      {alimentosSelecionados.map((item, index) => (
-                        <div key={index} className="p-2">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <p className="font-medium">{item.alimento.nome}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {Math.round(item.alimento.calorias * (item.quantidade / item.alimento.porcao))} kcal
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleAtualizarQuantidade(index, Math.max(0, item.quantidade - item.alimento.porcao))}
-                              >
-                                <Minus className="h-4 w-4" />
-                              </Button>
-                              <Input
-                                type="number"
-                                value={item.quantidade}
-                                onChange={(e) => handleAtualizarQuantidade(index, Number(e.target.value))}
-                                className="w-20 text-center"
-                              />
-                              <span className="text-sm text-muted-foreground w-8">
-                                {item.alimento.unidade}
-                              </span>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => handleAtualizarQuantidade(index, item.quantidade + item.alimento.porcao)}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                onClick={() => handleRemoverAlimento(index)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Total */}
-                    <div className="mt-4 p-4 bg-muted rounded-lg">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">Total</p>
-                          <p className="text-sm text-muted-foreground">
-                            {Math.round(calcularCaloriasRefeicao(alimentosSelecionados))} kcal
-                          </p>
-                        </div>
-                        <div className="text-sm text-right">
-                          <p>P: {Math.round(calcularMacrosRefeicao(alimentosSelecionados).proteinas)}g</p>
-                          <p>C: {Math.round(calcularMacrosRefeicao(alimentosSelecionados).carboidratos)}g</p>
-                          <p>G: {Math.round(calcularMacrosRefeicao(alimentosSelecionados).gorduras)}g</p>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
+          {alimentosSelecionados.length > 0 && (
+            <Card>
+                <CardHeader><CardTitle>Sua Refeição</CardTitle></CardHeader>
+                <CardContent className="space-y-2">
+                    {alimentosSelecionados.map((item) => (
+                        <div key={item.id} className="flex justify-between items-center p-2 border-b">
+                           <p className="font-medium">{item.name}</p>
+                           <Button variant="ghost" size="icon" onClick={() => handleRemoverAlimento(item.id)}>
+                               <X className="h-4 w-4" />
+                           </Button>
+                        </div>
+                    ))}
+                </CardContent>
+            </Card>
+          )}
+
           <Button
             className="w-full"
             disabled={alimentosSelecionados.length === 0}
             onClick={handleRegistrar}
           >
-            Registrar Refeição
+            Salvar Refeição
           </Button>
         </div>
       </SheetContent>
@@ -257,4 +146,4 @@ const MealRegistration: React.FC<MealRegistrationProps> = ({ onRegistrar }) => {
   );
 };
 
-export default MealRegistration; 
+export default MealRegistration;

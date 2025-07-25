@@ -1,82 +1,48 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { onboardingStep1Schema } from '@/lib/onboardingSchemas';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { OnboardingData } from '@/pages/Onboarding';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-
-type Step1Data = z.infer<typeof onboardingStep1Schema>;
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 interface Step1Props {
-  onNext: (data: Step1Data) => void;
+  onNext: (data: Partial<OnboardingData>) => void;
+  userName?: string | null;
 }
 
-const Step1: React.FC<Step1Props> = ({ onNext }) => {
-  const form = useForm<Step1Data>({
-    resolver: zodResolver(onboardingStep1Schema),
-    defaultValues: {
-      fullName: '',
-      dateOfBirth: '',
-      gender: 'male',
-    },
-  });
+const Step1: React.FC<Step1Props> = ({ onNext, userName }) => {
+  const [age, setAge] = useState(25);
 
-  const onSubmit = (data: Step1Data) => {
-    onNext(data);
+  const handleSubmit = () => {
+    onNext({ age });
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="fullName"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="dateOfBirth"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Date of Birth</FormLabel>
-              <FormControl>
-                <Input type="date" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="gender"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Gender</FormLabel>
-              <FormControl>
-                <select {...field} className="w-full p-2 border rounded">
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="other">Other</option>
-                </select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Next</Button>
-      </form>
-    </Form>
+    <div className="flex flex-col items-center justify-center h-full text-center space-y-8 animate-fade-in-up">
+        <div className="space-y-2">
+            <h2 className="text-2xl font-bold">Bem-vindo(a), {userName || 'Usuário'}!</h2>
+            <p className="text-muted-foreground">Para começar, qual é a sua idade?</p>
+        </div>
+        
+        <Card className="w-full max-w-md">
+            <CardContent className="pt-8 pb-6">
+                 <div className="space-y-6">
+                    <div className="text-5xl font-bold text-primary">{age}</div>
+                    <Slider
+                        defaultValue={[25]}
+                        value={[age]}
+                        max={100}
+                        min={13}
+                        step={1}
+                        onValueChange={(value) => setAge(value[0])}
+                    />
+                </div>
+            </CardContent>
+        </Card>
+      
+        <Button onClick={handleSubmit} size="lg">Próximo</Button>
+    </div>
   );
 };
 
-export default Step1; 
+export default Step1;

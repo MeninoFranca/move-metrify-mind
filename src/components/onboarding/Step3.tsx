@@ -1,123 +1,112 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { onboardingStep3Schema } from '@/lib/onboardingSchemas';
+import { useForm, Controller } from 'react-hook-form';
+import { OnboardingData } from '@/pages/Onboarding';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-
-type Step3Data = z.infer<typeof onboardingStep3Schema>;
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { Dumbbell, Target, Clock, Zap } from 'lucide-react';
+import { Slider } from '../ui/slider';
 
 interface Step3Props {
-  onNext: (data: Step3Data) => void;
+  onFinish: (data: Partial<OnboardingData>) => void;
   onPrev: () => void;
 }
 
-const equipmentOptions = [
-  { id: 'gym', label: 'Gym' },
-  { id: 'home', label: 'Home' },
-  { id: 'none', label: 'None' },
-] as const;
+const goals = [
+  { id: 'lose_weight', label: 'Perder Peso', icon: <Target className="h-8 w-8" /> },
+  { id: 'gain_muscle', label: 'Ganhar Músculo', icon: <Dumbbell className="h-8 w-8" /> },
+  { id: 'increase_endurance', label: 'Aumentar Resistência', icon: <Zap className="h-8 w-8" /> },
+  { id: 'maintain_weight', label: 'Manter a Forma', icon: <Clock className="h-8 w-8" /> },
+];
 
-const Step3: React.FC<Step3Props> = ({ onNext, onPrev }) => {
-  const form = useForm<Step3Data>({
-    resolver: zodResolver(onboardingStep3Schema),
-    defaultValues: {
-      mainGoal: 'lose_weight',
-      availableEquipment: ['home'],
-      timePerWorkout: 45,
-    },
+const equipmentOptions = [
+  { id: 'none', label: 'Nenhum' },
+  { id: 'bodyweight', label: 'Peso Corporal' },
+  { id: 'dumbbells', label: 'Halteres' },
+  { id: 'resistance_bands', label: 'Faixas Elásticas' },
+  { id: 'full_gym', label: 'Academia' },
+];
+
+
+const Step3: React.FC<Step3Props> = ({ onFinish, onPrev }) => {
+  const { control, handleSubmit, watch, setValue } = useForm<OnboardingData>({
+      defaultValues: {
+          fitness_goal: 'lose_weight',
+          experience_level: 'beginner',
+          available_equipment: ['bodyweight'],
+      }
   });
 
-  const onSubmit = (data: Step3Data) => {
-    onNext(data);
+  const selectedEquipment = watch('available_equipment') || [];
+
+  const handleEquipmentToggle = (equipmentId: string) => {
+    const isSelected = selectedEquipment.includes(equipmentId);
+    if (isSelected) {
+        setValue('available_equipment', selectedEquipment.filter(id => id !== equipmentId));
+    } else {
+        setValue('available_equipment', [...selectedEquipment, equipmentId]);
+    }
+  };
+
+  const onSubmit = (data: OnboardingData) => {
+    onFinish(data);
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="mainGoal"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Main Goal</FormLabel>
-              <FormControl>
-                <select {...field} className="w-full p-2 border rounded">
-                  <option value="lose_weight">Lose Weight</option>
-                  <option value="gain_muscle">Gain Muscle</option>
-                  <option value="maintain_shape">Maintain Shape</option>
-                </select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="availableEquipment"
-          render={() => (
-            <FormItem>
-              <FormLabel>Available Equipment</FormLabel>
-              {equipmentOptions.map((item) => (
-                <FormField
-                  key={item.id}
-                  control={form.control}
-                  name="availableEquipment"
-                  render={({ field }) => {
-                    return (
-                      <FormItem
-                        key={item.id}
-                        className="flex flex-row items-start space-x-3 space-y-0"
-                      >
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value?.includes(item.id)}
-                            onCheckedChange={(checked) => {
-                              return checked
-                                ? field.onChange([...field.value, item.id])
-                                : field.onChange(
-                                    field.value?.filter(
-                                      (value) => value !== item.id
-                                    )
-                                  );
-                            }}
-                          />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          {item.label}
-                        </FormLabel>
-                      </FormItem>
-                    );
-                  }}
-                />
-              ))}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="timePerWorkout"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Time per Workout (minutes)</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="45" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10))} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-between">
-          <Button type="button" onClick={onPrev} variant="outline">Previous</Button>
-          <Button type="submit">Next</Button>
+    <div className="flex flex-col items-center justify-center h-full space-y-6 animate-fade-in-up">
+        <div className="text-center space-y-2">
+            <h2 className="text-2xl font-bold">Quais são seus objetivos?</h2>
+            <p className="text-muted-foreground">Selecione seu objetivo principal e os equipamentos que possui.</p>
         </div>
-      </form>
-    </Form>
+        
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-2xl space-y-8">
+            {/* Seletor de Objetivos */}
+            <Controller
+                name="fitness_goal"
+                control={control}
+                render={({ field }) => (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {goals.map((goal) => (
+                            <Card 
+                                key={goal.id}
+                                onClick={() => field.onChange(goal.id)}
+                                className={cn(
+                                    "p-4 flex flex-col items-center justify-center space-y-3 cursor-pointer transition-all",
+                                    field.value === goal.id ? "ring-2 ring-primary bg-primary/10" : "hover:bg-muted"
+                                )}
+                            >
+                                {goal.icon}
+                                <span className="text-sm font-medium text-center">{goal.label}</span>
+                            </Card>
+                        ))}
+                    </div>
+                )}
+            />
+
+            {/* Seletor de Equipamentos */}
+            <div>
+                 <h3 className="text-lg font-semibold mb-4 text-center">Equipamentos Disponíveis</h3>
+                 <div className="flex flex-wrap justify-center gap-3">
+                     {equipmentOptions.map((option) => (
+                        <Button 
+                            key={option.id}
+                            type="button"
+                            variant={selectedEquipment.includes(option.id) ? 'default' : 'outline'}
+                            onClick={() => handleEquipmentToggle(option.id)}
+                        >
+                            {option.label}
+                        </Button>
+                     ))}
+                 </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-6">
+                <Button type="button" onClick={onPrev} variant="outline" size="lg">Anterior</Button>
+                <Button type="submit" size="lg">Finalizar e Criar Perfil</Button>
+            </div>
+        </form>
+    </div>
   );
 };
 
-export default Step3; 
+export default Step3;

@@ -26,4 +26,26 @@ export const onboardingStep4Schema = z.object({
     workout: z.boolean(),
     meals: z.boolean(),
   }),
-}); 
+});
+
+// Esquema para o formulário de registro completo
+export const registrationSchema = z.object({
+  fullName: z.string().min(3, { message: "O nome completo é obrigatório." }),
+  email: z.string().email({ message: "Por favor, insira um email válido." }),
+  password: z.string().min(6, { message: "A senha deve ter pelo menos 6 caracteres." }),
+  confirmPassword: z.string(),
+  terms: z.boolean().refine(val => val === true, {
+    message: "Você deve aceitar os termos e condições."
+  }),
+  age: z.number().min(13).max(100).optional(),
+  experienceLevel: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  height: z.number().min(100).max(250).optional(),
+  weight: z.number().min(30).max(300).optional(),
+  fitnessGoal: z.enum(['lose_weight', 'gain_muscle', 'maintain_weight', 'increase_endurance']).optional(),
+  availableEquipment: z.array(z.string()).optional(),
+}).refine(data => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem.",
+  path: ["confirmPassword"], // Onde o erro será exibido
+});
+
+export type RegistrationData = z.infer<typeof registrationSchema>;

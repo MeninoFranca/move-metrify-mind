@@ -6,6 +6,7 @@ import { Tables, TablesInsert } from '@/integrations/supabase/types';
 export type WeightProgress = Tables<'weight_progress'>;
 export type BodyMeasurements = Tables<'body_measurements'>;
 export type UserGoal = Tables<'user_goals'>;
+export type HydrationRecord = Tables<'hydration_records'>;
 
 export const progressService = {
   // --- Funções de Progresso de Peso ---
@@ -16,10 +17,7 @@ export const progressService = {
       .eq('user_id', userId)
       .order('recorded_date', { ascending: true });
 
-    if (error) {
-      console.error('Erro ao buscar progresso de peso:', error);
-      throw error;
-    }
+    if (error) throw error;
     return data;
   },
 
@@ -30,10 +28,7 @@ export const progressService = {
       .select()
       .single();
       
-    if (error) {
-      console.error('Erro ao adicionar progresso de peso:', error);
-      throw error;
-    }
+    if (error) throw error;
     return data;
   },
 
@@ -45,10 +40,7 @@ export const progressService = {
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
       
-    if (error) {
-      console.error('Erro ao buscar metas:', error);
-      throw error;
-    }
+    if (error) throw error;
     return data;
   },
 
@@ -59,12 +51,89 @@ export const progressService = {
       .select()
       .single();
 
-    if (error) {
-      console.error('Erro ao adicionar meta:', error);
-      throw error;
-    }
+    if (error) throw error;
     return data;
   },
   
-  // Você pode adicionar funções para `body_measurements` e `progress_photos` aqui, seguindo o mesmo padrão.
+  // --- NOVAS Funções de Hidratação ---
+
+  /**
+   * Busca ou cria o registro de hidratação para o dia atual.
+   */
+  async getOrCreateHydrationRecord(userId: string, userWeight: number): Promise<HydrationRecord> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // 1. Tenta buscar o registro de hoje
+    const { data: existingRecord, error: fetchError } = await supabase
+      .from('hydration_records')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('date', today)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = row not found
+        console.error("Erro ao buscar registro de hidratação:", fetchError);
+        throw fetchError;
+    }
+
+    // 2. Se o registro existe, retorna ele
+    if (existingRecord) return existingRecord;
+
+    // 3. Se não existe, cria um novo
+    const dailyGoalMl = Math.round(userWeight * 35); // Cálculo da meta: 35ml por kg
+    const { data: newRecord, error: insertError } = await supabase
+      .from('hydration_records')
+      .insert({
+          user_id: userId,
+          date: today,
+          daily_goal_ml: dailyGoalMl,
+          consumed_ml: 0
+      })
+      .select()
+      .single();
+    
+    if (insertError) {
+        console.error("Erro ao criar registro de hidratação:", insertError);
+        throw insertError;
+    }
+
+    return newRecord;
+  },
+
+  /**
+   * Adiciona uma nova entrada de água e atualiza o total consumido.
+   */
+  async addHydrationEntry(recordId: string, amountMl: number): Promise<HydrationRecord> {
+    // 1. Adiciona a entrada individual
+    const { error: entryError } = await supabase
+      .from('hydration_entries')
+      .insert({ hydration_record_id: recordId, amount_ml: amountMl });
+
+    if(entryError) {
+        console.error("Erro ao adicionar entrada de água:", entryError);
+        throw entryError;
+    }
+
+    // 2. Atualiza o total no registro principal usando RPC para evitar race conditions
+    const { data, error: rpcError } = await supabase.rpc('add_water', {
+        record_id: recordId,
+        amount: amountMl
+    });
+
+    if (rpcError) {
+      console.error("Erro ao atualizar total de água:", rpcError);
+      throw rpcError;
+    }
+    
+    // 3. Retorna o registro atualizado (a RPC pode ser ajustada para retornar isso)
+     const { data: updatedRecord, error: fetchError } = await supabase
+      .from('hydration_records')
+      .select('*')
+      .eq('id', recordId)
+      .single();
+
+    if(fetchError) throw fetchError;
+    
+    return updatedRecord;
+  }
 };

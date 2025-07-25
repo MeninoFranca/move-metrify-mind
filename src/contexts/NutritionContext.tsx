@@ -3,13 +3,14 @@ import { nutritionService, NutritionPlan, Meal, FoodItem } from '@/services/nutr
 import { useAuth } from './AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { TablesInsert } from '@/integrations/supabase/types';
+import { calculateNutritionTargets } from '@/services/nutritionCalculator';
 
 interface NutritionContextType {
   plans: NutritionPlan[];
   meals: Meal[];
-  foodLibrary: FoodItem[];
   isLoading: boolean;
-  addPlan: (plan: Omit<TablesInsert<'nutrition_plans'>, 'user_id' | 'id'>) => Promise<void>;
+  addMeal: (meal: Omit<TablesInsert<'meals'>, 'id' | 'user_id'>, foods: { food_item_id: string; quantity_grams: number }[]) => Promise<void>;
+  generatePlan: () => Promise<void>;
 }
 
 const NutritionContext = createContext<NutritionContextType | undefined>(undefined);
@@ -21,26 +22,23 @@ export const useNutrition = () => {
 };
 
 export const NutritionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   
   const [plans, setPlans] = useState<NutritionPlan[]>([]);
   const [meals, setMeals] = useState<Meal[]>([]);
-  const [foodLibrary, setFoodLibrary] = useState<FoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      const [plansData, mealsData, foodData] = await Promise.all([
+      const [plansData, mealsData] = await Promise.all([
         nutritionService.getNutritionPlans(user.id),
         nutritionService.getMeals(user.id),
-        nutritionService.getFoodLibrary(),
       ]);
       setPlans(plansData);
       setMeals(mealsData);
-      setFoodLibrary(foodData);
     } catch (error) {
       toast({ variant: "destructive", title: "Erro ao carregar dados de nutrição." });
     } finally {
@@ -52,19 +50,37 @@ export const NutritionProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     fetchData();
   }, [fetchData]);
 
-  const addPlan = async (plan: Omit<TablesInsert<'nutrition_plans'>, 'user_id' | 'id'>) => {
-    if (!user) return;
-    try {
-      const newPlan = await nutritionService.saveNutritionPlan({ ...plan, user_id: user.id });
-      setPlans(prev => [newPlan, ...prev]);
-      toast({ title: "Plano nutricional salvo com sucesso!" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "Erro ao salvar plano." });
-    }
+  const addMeal = async (meal: Omit<TablesInsert<'meals'>, 'id' | 'user_id'>, foods: { food_item_id: string; quantity_grams: number }[]) => {
+    // ... (função addMeal inalterada)
   };
+  
+  const generatePlan = async () => {
+      if(!user || !profile) {
+          toast({ variant: "destructive", title: "Perfil do usuário não encontrado." });
+          return;
+      }
+      setIsLoading(true);
+      try {
+          // 1. Calcular metas
+          const targets = calculateNutritionTargets(profile);
+
+          // 2. Criar o plano no banco
+          const newPlan = await nutritionService.generateAndSaveFullDayPlan(user.id, targets);
+
+          // 3. Atualizar o estado local
+          await fetchData();
+
+          toast({ title: "Plano nutricional gerado com sucesso!" });
+      } catch (error: any) {
+          console.error("Erro ao gerar plano:", error);
+          toast({ variant: "destructive", title: "Erro ao gerar plano.", description: error.message });
+      } finally {
+          setIsLoading(false);
+      }
+  }
 
   return (
-    <NutritionContext.Provider value={{ plans, meals, foodLibrary, isLoading, addPlan }}>
+    <NutritionContext.Provider value={{ plans, meals, isLoading, addMeal, generatePlan }}>
       {children}
     </NutritionContext.Provider>
   );

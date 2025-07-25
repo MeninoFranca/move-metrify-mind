@@ -1,36 +1,78 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ListaCompras } from '@/types/nutrition';
+import { Meal, FoodItem } from '@/services/nutritionService';
 import { ShoppingCart, Share2, Check } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
-interface ShoppingListProps {
-  lista: ListaCompras;
-  onMarcarItem: (itemId: string) => void;
-  onCompartilhar: () => void;
+interface ShoppingListItem {
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    category: string;
 }
 
-const ShoppingList: React.FC<ShoppingListProps> = ({
-  lista,
-  onMarcarItem,
-  onCompartilhar
-}) => {
-  // Agrupa itens por categoria
-  const itensPorCategoria = lista.itens.reduce((acc, item) => {
-    const categoria = item.alimento.categoria;
-    if (!acc[categoria]) {
-      acc[categoria] = [];
-    }
-    acc[categoria].push(item);
-    return acc;
-  }, {} as Record<string, typeof lista.itens>);
+interface ShoppingListProps {
+  meals: Meal[];
+}
 
-  // Calcula progresso
-  const totalItens = lista.itens.length;
-  const itensComprados = lista.itens.filter(item => item.comprado).length;
-  const progresso = Math.round((itensComprados / totalItens) * 100);
+const ShoppingList: React.FC<ShoppingListProps> = ({ meals }) => {
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+
+  // Gera e agrupa a lista de compras a partir das refeições
+  const shoppingList = useMemo(() => {
+    const itemsMap = new Map<string, ShoppingListItem>();
+
+    meals.forEach(meal => {
+        meal.meal_foods.forEach(foodEntry => {
+            const food = foodEntry.food_items;
+            const existingItem = itemsMap.get(food.id);
+            if (existingItem) {
+                existingItem.quantity += foodEntry.quantity_grams;
+            } else {
+                itemsMap.set(food.id, {
+                    id: food.id,
+                    name: food.name,
+                    quantity: foodEntry.quantity_grams,
+                    unit: 'g', // Assumindo 'g' como padrão
+                    category: 'outros' // Categoria a ser definida no futuro no DB
+                });
+            }
+        });
+    });
+
+    return Array.from(itemsMap.values());
+  }, [meals]);
+  
+   const itemsByCategory = useMemo(() => {
+    return shoppingList.reduce((acc, item) => {
+      const category = item.category;
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(item);
+      return acc;
+    }, {} as Record<string, typeof shoppingList>);
+  }, [shoppingList]);
+
+  const handleToggleItem = (itemId: string) => {
+    setCheckedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(itemId)) {
+        newSet.delete(itemId);
+      } else {
+        newSet.add(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const totalItems = shoppingList.length;
+  const itemsChecked = checkedItems.size;
+  const progress = totalItems > 0 ? Math.round((itemsChecked / totalItems) * 100) : 0;
 
   return (
     <Sheet>
@@ -40,82 +82,67 @@ const ShoppingList: React.FC<ShoppingListProps> = ({
           Lista de Compras
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+      <SheetContent side="right" className="w-[400px] sm:w-[540px] flex flex-col">
         <SheetHeader>
           <SheetTitle>Lista de Compras</SheetTitle>
         </SheetHeader>
-        <div className="mt-6 space-y-6">
-          {/* Progresso */}
+        <div className="mt-6 space-y-6 flex-1 overflow-y-auto pr-6">
           <Card>
             <CardContent className="pt-6">
               <div className="flex justify-between items-center mb-4">
                 <div>
                   <h3 className="font-medium">Progresso</h3>
                   <p className="text-sm text-muted-foreground">
-                    {itensComprados} de {totalItens} itens comprados
+                    {itemsChecked} de {totalItems} itens
                   </p>
                 </div>
-                <div className="text-2xl font-bold">
-                  {progresso}%
-                </div>
+                <div className="text-2xl font-bold">{progress}%</div>
               </div>
-              <div className="h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${progresso}%` }}
-                />
-              </div>
+              <Progress value={progress} />
             </CardContent>
           </Card>
 
-          {/* Lista por Categoria */}
-          {Object.entries(itensPorCategoria).map(([categoria, itens]) => (
-            <Card key={categoria}>
+          {Object.entries(itemsByCategory).map(([category, items]) => (
+            <Card key={category}>
               <CardHeader>
-                <CardTitle className="capitalize">{categoria}</CardTitle>
+                <CardTitle className="capitalize text-lg">{category}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {itens.map((item) => (
+                  {items.map((item) => (
                     <div
-                      key={item.alimento.id}
+                      key={item.id}
                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted"
                     >
                       <Checkbox
-                        checked={item.comprado}
-                        onCheckedChange={() => onMarcarItem(item.alimento.id)}
+                        id={item.id}
+                        checked={checkedItems.has(item.id)}
+                        onCheckedChange={() => handleToggleItem(item.id)}
                       />
-                      <div className="flex-1">
-                        <p className={item.comprado ? 'line-through text-muted-foreground' : ''}>
-                          {item.alimento.nome}
+                      <label htmlFor={item.id} className="flex-1 cursor-pointer">
+                        <p className={checkedItems.has(item.id) ? 'line-through text-muted-foreground' : ''}>
+                          {item.name}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {item.quantidade}{item.alimento.unidade}
+                          {item.quantity}{item.unit}
                         </p>
-                      </div>
-                      {item.comprado && (
-                        <Check className="h-4 w-4 text-primary" />
-                      )}
+                      </label>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
           ))}
-
-          {/* Botão Compartilhar */}
-          <Button
-            className="w-full"
-            variant="outline"
-            onClick={onCompartilhar}
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Compartilhar Lista
-          </Button>
+        </div>
+        <div className="mt-auto pt-6 border-t">
+             <Button className="w-full" variant="outline">
+                <Share2 className="h-4 w-4 mr-2" />
+                Compartilhar Lista
+            </Button>
         </div>
       </SheetContent>
     </Sheet>
   );
 };
 
-export default ShoppingList; 
+export default ShoppingList;

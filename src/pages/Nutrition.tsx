@@ -2,10 +2,15 @@ import React from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useNutrition } from '@/contexts/NutritionContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Sparkles } from 'lucide-react';
+import MealRegistration from '@/components/nutrition/MealRegistration';
+import MealPlanDisplay from '@/components/nutrition/MealPlanDisplay';
 
 const Nutrition = () => {
-  const { plans, meals, isLoading } = useNutrition();
+  const { plans, meals, isLoading, addMeal, generatePlan } = useNutrition();
+
+  const latestPlan = plans.length > 0 ? { ...plans[0], meals: meals.filter(m => m.nutrition_plan_id === plans[0].id) } : null;
 
   if (isLoading) {
     return (
@@ -20,37 +25,27 @@ const Nutrition = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Nutrição</h1>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader><CardTitle>Meus Planos Nutricionais</CardTitle></CardHeader>
-            <CardContent>
-              {plans.length > 0 ? (
-                <ul>
-                  {plans.map(plan => (
-                    <li key={plan.id} className="border-b py-2">{plan.name} - {plan.daily_calories} kcal</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">Nenhum plano nutricional encontrado.</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader><CardTitle>Últimas Refeições</CardTitle></CardHeader>
-            <CardContent>
-              {meals.length > 0 ? (
-                <ul>
-                  {meals.slice(0, 5).map(meal => (
-                    <li key={meal.id} className="border-b py-2">{meal.name} - {new Date(meal.planned_date).toLocaleDateString()}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted-foreground">Nenhuma refeição registrada.</p>
-              )}
-            </CardContent>
-          </Card>
+        <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Nutrição</h1>
+            <div className="flex gap-2">
+                <MealRegistration />
+                <Button onClick={generatePlan} disabled={isLoading}>
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Gerar Novo Plano
+                </Button>
+            </div>
         </div>
+
+        {latestPlan ? (
+             <MealPlanDisplay plan={latestPlan} />
+        ) : (
+            <Card className="text-center p-8">
+                 <CardContent>
+                    <p className="text-muted-foreground">Você ainda não tem um plano nutricional.</p>
+                    <p className="text-muted-foreground">Clique em "Gerar Novo Plano" para começar!</p>
+                 </CardContent>
+            </Card>
+        )}
       </div>
     </DashboardLayout>
   );
