@@ -21,7 +21,8 @@ import {
   Zap,
   BarChart3,
   ArrowRight,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProgress } from '@/contexts/ProgressContext';
