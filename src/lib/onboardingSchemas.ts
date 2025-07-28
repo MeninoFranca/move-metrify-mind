@@ -14,7 +14,7 @@ export const onboardingStep2Schema = z.object({
 
 export const onboardingStep3Schema = z.object({
   mainGoal: z.enum(['lose_weight', 'gain_muscle', 'maintain_shape']),
-  availableEquipment: z.array(z.enum(['gym', 'home', 'none'])),
+  availableEquipment: z.array(z.enum(['full_gym', 'dumbbells', 'bodyweight', 'resistance_bands', 'none'])),
   timePerWorkout: z.number().min(15).max(120),
 });
 
@@ -42,7 +42,7 @@ export const registrationSchema = z.object({
   height: z.number().min(100).max(250).optional(),
   weight: z.number().min(30).max(300).optional(),
   fitnessGoal: z.enum(['lose_weight', 'gain_muscle', 'maintain_weight', 'increase_endurance']).optional(),
-  availableEquipment: z.array(z.string()).optional(),
+  availableEquipment: z.array(z.enum(['full_gym', 'dumbbells', 'bodyweight', 'resistance_bands', 'none'])).optional(),
 }).refine(data => data.password === data.confirmPassword, {
   message: "As senhas não coincidem.",
   path: ["confirmPassword"], // Onde o erro será exibido

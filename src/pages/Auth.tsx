@@ -114,7 +114,7 @@ export default function Auth() {
   const handleLogin = async (data: LoginData) => {
     setError(null);
     try {
-      await signIn(data);
+      await signIn({ email: data.email, password: data.password });
       navigate('/dashboard');
     } catch (error: any) {
       setError('Email ou senha incorretos. Verifique suas credenciais.');

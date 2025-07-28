@@ -6,7 +6,7 @@ export const mockExercises: Exercise[] = [
     name: 'Supino Reto',
     description: 'Exercício clássico para desenvolvimento do peitoral',
     muscleGroup: 'chest',
-    equipment: ['gym'],
+    equipment: ['full_gym'],
     difficulty: 'intermediate',
     instructions: [
       'Deite-se no banco com os pés apoiados no chão',
@@ -24,7 +24,7 @@ export const mockExercises: Exercise[] = [
     name: 'Agachamento',
     description: 'Exercício fundamental para desenvolvimento das pernas',
     muscleGroup: 'legs',
-    equipment: ['gym', 'home'],
+    equipment: ['full_gym', 'bodyweight'],
     difficulty: 'intermediate',
     instructions: [
       'Posicione os pés na largura dos ombros',

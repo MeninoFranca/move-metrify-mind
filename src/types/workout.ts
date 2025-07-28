@@ -1,4 +1,4 @@
-export type Equipment = 'none' | 'gym' | 'home';
+export type Equipment = 'none' | 'full_gym' | 'dumbbells' | 'bodyweight' | 'resistance_bands';
 export type MuscleGroup = 'chest' | 'back' | 'legs' | 'shoulders' | 'arms' | 'core' | 'full_body';
 export type WorkoutType = 'strength' | 'cardio' | 'hiit' | 'flexibility';
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced';

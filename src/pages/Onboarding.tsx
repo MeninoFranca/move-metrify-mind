@@ -143,7 +143,10 @@ export default function Onboarding() {
   const handleFinish = async () => {
     setIsLoading(true);
     try {
-      await updateProfile(onboardingData);
+      await updateProfile({
+        ...onboardingData,
+        available_equipment: onboardingData.available_equipment as any
+      });
       navigate('/dashboard');
     } catch (error) {
       console.error('Erro ao salvar perfil:', error);

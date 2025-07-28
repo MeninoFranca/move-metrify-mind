@@ -114,25 +114,38 @@ export const progressService = {
         throw entryError;
     }
 
-    // 2. Atualiza o total no registro principal usando RPC para evitar race conditions
-    const { data, error: rpcError } = await supabase.rpc('add_water', {
-        record_id: recordId,
-        amount: amountMl
-    });
+    // 2. Busca o record atual para somar o valor
+    const { data: currentRecord, error: fetchError } = await supabase
+      .from('hydration_records')
+      .select('consumed_ml')
+      .eq('id', recordId)
+      .single();
 
-    if (rpcError) {
-      console.error("Erro ao atualizar total de água:", rpcError);
-      throw rpcError;
+    if (fetchError) {
+      console.error("Erro ao buscar registro atual:", fetchError);
+      throw fetchError;
+    }
+
+    // 3. Atualiza o total consumido
+    const newTotal = (currentRecord.consumed_ml || 0) + amountMl;
+    const { error: updateError } = await supabase
+      .from('hydration_records')
+      .update({ consumed_ml: newTotal })
+      .eq('id', recordId);
+
+    if (updateError) {
+      console.error("Erro ao atualizar total de água:", updateError);
+      throw updateError;
     }
     
-    // 3. Retorna o registro atualizado (a RPC pode ser ajustada para retornar isso)
-     const { data: updatedRecord, error: fetchError } = await supabase
+    // 4. Retorna o registro atualizado
+    const { data: updatedRecord, error: finalFetchError } = await supabase
       .from('hydration_records')
       .select('*')
       .eq('id', recordId)
       .single();
 
-    if(fetchError) throw fetchError;
+    if(finalFetchError) throw finalFetchError;
     
     return updatedRecord;
   }

@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { Calendar, dateFnsLocalizer, EventProps } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
-import ptBR from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useCalendar } from '@/contexts/CalendarContext';
 import { CalendarEvent } from '@/services/calendarService';
@@ -68,8 +68,8 @@ const CalendarPage = () => {
           <Calendar
             localizer={localizer}
             events={formattedEvents}
-            startAccessor="start"
-            endAccessor="end"
+            startAccessor={(event: any) => event.start}
+            endAccessor={(event: any) => event.end}
             style={{ height: '100%' }}
             culture='pt-BR'
             messages={{
