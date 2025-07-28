@@ -9,7 +9,7 @@ import { NutritionProvider } from '@/contexts/NutritionContext';
 import { CalendarProvider } from '@/contexts/CalendarContext';
 
 // Páginas
-import Index from '@/pages/Index';
+import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
 import Profile from '@/pages/Profile';
@@ -34,7 +34,7 @@ function App() {
                 <div className="App">
                   <Routes>
                     {/* Rotas Públicas */}
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<Landing />} />
                     <Route path="/auth" element={<Auth />} />
 
                     {/* Rotas Protegidas */}
