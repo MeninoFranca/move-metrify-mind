@@ -11,7 +11,7 @@ import { CalendarProvider } from '@/contexts/CalendarContext';
 // Páginas
 import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
-import Dashboard from '@/pages/Dashboard';
+import ModernDashboard from '@/pages/ModernDashboard';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import Progress from '@/pages/Progress';
@@ -39,7 +39,7 @@ function App() {
 
                     {/* Rotas Protegidas */}
                     <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
-                    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                    <Route path="/dashboard" element={<ProtectedRoute><ModernDashboard /></ProtectedRoute>} />
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                     <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
