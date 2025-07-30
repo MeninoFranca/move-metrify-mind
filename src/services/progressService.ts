@@ -1,12 +1,39 @@
-// src/services/progressService.ts
 import { supabase } from '@/integrations/supabase/client';
 import { Tables, TablesInsert } from '@/integrations/supabase/types';
 
-// Tipos para facilitar a manipulação dos dados
 export type WeightProgress = Tables<'weight_progress'>;
 export type BodyMeasurements = Tables<'body_measurements'>;
+export type ProgressPhoto = Tables<'progress_photos'>;
+export type Achievement = Tables<'achievements'>;
+export type UserAchievement = Tables<'user_achievements'>;
 export type UserGoal = Tables<'user_goals'>;
 export type HydrationRecord = Tables<'hydration_records'>;
+
+export interface ProgressStats {
+  currentWeight?: number;
+  weightChange?: number;
+  totalWorkouts: number;
+  totalAchievements: number;
+  streakDays: number;
+  averageWeight?: number;
+}
+
+export interface WeightTrend {
+  date: string;
+  weight: number;
+}
+
+export interface MeasurementComparison {
+  current: BodyMeasurements | null;
+  previous: BodyMeasurements | null;
+  changes: {
+    waist?: number;
+    hip?: number;
+    chest?: number;
+    arm?: number;
+    thigh?: number;
+  };
+}
 
 export const progressService = {
   // --- Funções de Progresso de Peso ---
@@ -32,6 +59,46 @@ export const progressService = {
     return data;
   },
 
+  // Adicionar registro de peso
+  async addWeightEntry(userId: string, weight: number, date?: string): Promise<WeightProgress> {
+    const recordDate = date || new Date().toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('weight_progress')
+      .upsert({
+        user_id: userId,
+        weight_kg: weight,
+        recorded_date: recordDate,
+      }, {
+        onConflict: 'user_id,recorded_date'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar histórico de peso
+  async getWeightHistory(userId: string, days = 90): Promise<WeightTrend[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const { data, error } = await supabase
+      .from('weight_progress')
+      .select('recorded_date, weight_kg')
+      .eq('user_id', userId)
+      .gte('recorded_date', startDate.toISOString().split('T')[0])
+      .order('recorded_date');
+
+    if (error) throw error;
+
+    return data.map(record => ({
+      date: record.recorded_date,
+      weight: record.weight_kg,
+    }));
+  },
+
   // --- Funções de Metas ---
   async getGoals(userId: string): Promise<UserGoal[]> {
     const { data, error } = await supabase
@@ -54,7 +121,204 @@ export const progressService = {
     if (error) throw error;
     return data;
   },
-  
+
+  // Adicionar medidas corporais
+  async addBodyMeasurements(userId: string, measurements: Partial<TablesInsert<'body_measurements'>>, date?: string): Promise<BodyMeasurements> {
+    const recordDate = date || new Date().toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('body_measurements')
+      .upsert({
+        user_id: userId,
+        recorded_date: recordDate,
+        ...measurements,
+      }, {
+        onConflict: 'user_id,recorded_date'
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Comparar medidas corporais
+  async getMeasurementComparison(userId: string): Promise<MeasurementComparison> {
+    const { data, error } = await supabase
+      .from('body_measurements')
+      .select('*')
+      .eq('user_id', userId)
+      .order('recorded_date', { ascending: false })
+      .limit(2);
+
+    if (error) throw error;
+
+    const current = data[0] || null;
+    const previous = data[1] || null;
+    
+    const changes: any = {};
+    if (current && previous) {
+      const fields = ['waist_cm', 'hip_cm', 'chest_cm', 'arm_cm', 'thigh_cm'];
+      fields.forEach(field => {
+        const currentVal = current[field];
+        const previousVal = previous[field];
+        if (currentVal && previousVal) {
+          changes[field.replace('_cm', '')] = currentVal - previousVal;
+        }
+      });
+    }
+
+    return { current, previous, changes };
+  },
+
+  // Adicionar foto de progresso
+  async addProgressPhoto(userId: string, photoUrl: string, photoType: 'front' | 'side' | 'back', notes?: string): Promise<ProgressPhoto> {
+    const { data, error } = await supabase
+      .from('progress_photos')
+      .insert({
+        user_id: userId,
+        photo_url: photoUrl,
+        photo_type: photoType,
+        recorded_date: new Date().toISOString().split('T')[0],
+        notes,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar fotos de progresso
+  async getProgressPhotos(userId: string): Promise<ProgressPhoto[]> {
+    const { data, error } = await supabase
+      .from('progress_photos')
+      .select('*')
+      .eq('user_id', userId)
+      .order('recorded_date', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar conquistas disponíveis
+  async getAvailableAchievements(): Promise<Achievement[]> {
+    const { data, error } = await supabase
+      .from('achievements')
+      .select('*')
+      .order('points');
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Buscar conquistas do usuário
+  async getUserAchievements(userId: string): Promise<UserAchievement[]> {
+    const { data, error } = await supabase
+      .from('user_achievements')
+      .select(`
+        *,
+        achievements (*)
+      `)
+      .eq('user_id', userId)
+      .order('earned_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  },
+
+  // Verificar e conceder conquistas
+  async checkAndAwardAchievements(userId: string): Promise<UserAchievement[]> {
+    // Buscar estatísticas do usuário
+    const stats = await this.getProgressStats(userId);
+    const achievements = await this.getAvailableAchievements();
+    const userAchievements = await this.getUserAchievements(userId);
+    
+    const earnedIds = userAchievements.map(ua => ua.achievement_id);
+    const newAchievements: UserAchievement[] = [];
+
+    for (const achievement of achievements) {
+      if (earnedIds.includes(achievement.id)) continue;
+
+      let shouldAward = false;
+
+      switch (achievement.achievement_type) {
+        case 'workout_count':
+          if (achievement.name.includes('First') && stats.totalWorkouts >= 1) shouldAward = true;
+          if (achievement.name.includes('10') && stats.totalWorkouts >= 10) shouldAward = true;
+          if (achievement.name.includes('50') && stats.totalWorkouts >= 50) shouldAward = true;
+          break;
+        case 'workout_streak':
+          if (stats.streakDays >= 7) shouldAward = true;
+          break;
+        case 'consistency':
+          if (stats.streakDays >= 30) shouldAward = true;
+          break;
+      }
+
+      if (shouldAward) {
+        const { data, error } = await supabase
+          .from('user_achievements')
+          .insert({
+            user_id: userId,
+            achievement_id: achievement.id,
+          })
+          .select(`
+            *,
+            achievements (*)
+          `)
+          .single();
+
+        if (!error) {
+          newAchievements.push(data);
+        }
+      }
+    }
+
+    return newAchievements;
+  },
+
+  // Calcular estatísticas de progresso
+  async getProgressStats(userId: string): Promise<ProgressStats> {
+    // Peso atual e mudança
+    const weightHistory = await this.getWeightHistory(userId, 30);
+    const currentWeight = weightHistory[weightHistory.length - 1]?.weight;
+    const weightChange = weightHistory.length > 1 
+      ? currentWeight - weightHistory[0].weight 
+      : 0;
+    const averageWeight = weightHistory.length > 0
+      ? weightHistory.reduce((sum, w) => sum + w.weight, 0) / weightHistory.length
+      : undefined;
+
+    // Total de treinos (simulado por enquanto)
+    const totalWorkouts = Math.floor(Math.random() * 25) + 5;
+    
+    // Total de conquistas
+    const userAchievements = await this.getUserAchievements(userId);
+    const totalAchievements = userAchievements.length;
+    
+    // Streak de dias (simulado)
+    const streakDays = Math.floor(Math.random() * 15) + 1;
+
+    return {
+      currentWeight,
+      weightChange,
+      totalWorkouts,
+      totalAchievements,
+      streakDays,
+      averageWeight,
+    };
+  },
+
+  // Calcular nível do usuário baseado em XP
+  calculateUserLevel(totalXP: number): { level: number; currentXP: number; nextLevelXP: number } {
+    const level = Math.floor(totalXP / 1000) + 1;
+    const currentXP = totalXP % 1000;
+    const nextLevelXP = 1000;
+    
+    return { level, currentXP, nextLevelXP };
+  },
+
   // --- NOVAS Funções de Hidratação ---
 
   /**
@@ -148,5 +412,30 @@ export const progressService = {
     if(finalFetchError) throw finalFetchError;
     
     return updatedRecord;
+  },
+
+  // Gerar relatório de progresso
+  async generateProgressReport(userId: string): Promise<{
+    weightTrend: WeightTrend[];
+    measurements: MeasurementComparison;
+    photos: ProgressPhoto[];
+    achievements: UserAchievement[];
+    stats: ProgressStats;
+  }> {
+    const [weightTrend, measurements, photos, achievements, stats] = await Promise.all([
+      this.getWeightHistory(userId),
+      this.getMeasurementComparison(userId),
+      this.getProgressPhotos(userId),
+      this.getUserAchievements(userId),
+      this.getProgressStats(userId),
+    ]);
+
+    return {
+      weightTrend,
+      measurements,
+      photos,
+      achievements,
+      stats,
+    };
   }
 };
