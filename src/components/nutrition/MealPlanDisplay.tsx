@@ -35,11 +35,11 @@ const MealPlanDisplay: React.FC<MealPlanDisplayProps> = ({ plan }) => {
               </AccordionTrigger>
               <AccordionContent>
                 <ul className="list-disc pl-5 space-y-1">
-                  {meal.meal_foods.map(food => (
+                   {meal.meal_foods?.map(food => (
                      <li key={food.id} className="text-muted-foreground">
-                        {food.quantity_grams}g de {food.food_items.name}
+                        {food.quantity_grams}g de Item #{food.food_item_id}
                      </li>
-                  ))}
+                   ))}
                 </ul>
               </AccordionContent>
             </AccordionItem>

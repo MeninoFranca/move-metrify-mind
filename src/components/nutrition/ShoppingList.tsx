@@ -27,18 +27,18 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ meals }) => {
     const itemsMap = new Map<string, ShoppingListItem>();
 
     meals.forEach(meal => {
-        meal.meal_foods.forEach(foodEntry => {
-            const food = foodEntry.food_items;
-            const existingItem = itemsMap.get(food.id);
+        meal.meal_foods?.forEach(foodEntry => {
+            const itemId = foodEntry.food_item_id;
+            const existingItem = itemsMap.get(itemId);
             if (existingItem) {
                 existingItem.quantity += foodEntry.quantity_grams;
             } else {
-                itemsMap.set(food.id, {
-                    id: food.id,
-                    name: food.name,
+                itemsMap.set(itemId, {
+                    id: itemId,
+                    name: `Item #${itemId}`,
                     quantity: foodEntry.quantity_grams,
-                    unit: 'g', // Assumindo 'g' como padrão
-                    category: 'outros' // Categoria a ser definida no futuro no DB
+                    unit: 'g',
+                    category: 'outros'
                 });
             }
         });

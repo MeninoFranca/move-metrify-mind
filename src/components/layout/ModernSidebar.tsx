@@ -43,12 +43,6 @@ const menuItems = [
     description: 'Planner personalizado'
   },
   { 
-    icon: Droplets, 
-    label: 'Hidratação', 
-    path: '/hydration',
-    description: 'Sistema lembretes'
-  },
-  { 
     icon: BarChart3, 
     label: 'Progresso', 
     path: '/progress',
@@ -59,12 +53,6 @@ const menuItems = [
     label: 'Calendário', 
     path: '/calendar',
     description: 'Planejamento visual'
-  },
-  { 
-    icon: History, 
-    label: 'Histórico', 
-    path: '/history',
-    description: 'Atividades completas'
   },
   { 
     icon: User, 
