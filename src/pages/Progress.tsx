@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useProgress } from '@/contexts/ProgressContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import ModernLayout from '@/components/layout/ModernLayout';
 import { Scale, Target, Activity, Trophy, Calendar, ChevronRight } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 
@@ -35,11 +35,11 @@ const Progress = () => {
     };
     
     if (isLoading) {
-        return <DashboardLayout><div>Carregando progresso...</div></DashboardLayout>
+        return <ModernLayout><div>Carregando progresso...</div></ModernLayout>
     }
 
     return (
-        <DashboardLayout>
+        <ModernLayout>
             <div className="space-y-6">
                 <h2 className="text-2xl font-bold">Seu Progresso</h2>
 
@@ -114,7 +114,7 @@ const Progress = () => {
                     </CardContent>
                 </Card>
             </div>
-        </DashboardLayout>
+        </ModernLayout>
     );
 };
 

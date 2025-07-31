@@ -20,6 +20,8 @@ const mealTypes = [
   { value: 'evening_snack', label: 'Ceia', icon: '🥛', time: '21:30' },
 ];
 
+import ModernLayout from '@/components/layout/ModernLayout';
+
 export default function Nutrition() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
@@ -119,249 +121,251 @@ export default function Nutrition() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Utensils className="h-8 w-8 text-primary" />
-          Nutrição
-        </h1>
-        <div className="flex gap-2">
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-auto"
-          />
-          <Button onClick={generateMealPlan}>
-            <Plus className="mr-2 h-4 w-4" />
-            Gerar Plano
-          </Button>
-        </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">
-            <Calculator className="mr-2 h-4 w-4" />
-            Resumo
-          </TabsTrigger>
-          <TabsTrigger value="meals">
-            <Utensils className="mr-2 h-4 w-4" />
-            Refeições
-          </TabsTrigger>
-          <TabsTrigger value="tracking">
-            <Camera className="mr-2 h-4 w-4" />
-            Registro
-          </TabsTrigger>
-          <TabsTrigger value="shopping">
-            <ShoppingCart className="mr-2 h-4 w-4" />
-            Compras
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {/* Metas Nutricionais */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Metas Diárias Personalizadas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {macroTargets && nutritionStats && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <MacroCard
-                    label="Calorias"
-                    current={nutritionStats.consumed.calories}
-                    target={nutritionStats.target.calories}
-                    unit=" kcal"
-                    color="blue"
-                  />
-                  <MacroCard
-                    label="Proteínas"
-                    current={nutritionStats.consumed.protein}
-                    target={nutritionStats.target.protein}
-                    unit="g"
-                    color="red"
-                  />
-                  <MacroCard
-                    label="Carboidratos"
-                    current={nutritionStats.consumed.carbs}
-                    target={nutritionStats.target.carbs}
-                    unit="g"
-                    color="green"
-                  />
-                  <MacroCard
-                    label="Gorduras"
-                    current={nutritionStats.consumed.fat}
-                    target={nutritionStats.target.fat}
-                    unit="g"
-                    color="yellow"
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Distribuição de Macros */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Distribuição de Macronutrientes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-center text-muted-foreground">
-                  Gráfico de distribuição será implementado aqui
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="meals" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {mealTypes.map((meal) => (
-              <Card key={meal.value} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <span className="text-2xl">{meal.icon}</span>
-                      {meal.label}
-                    </CardTitle>
-                    <Badge variant="outline">{meal.time}</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="space-y-3">
-                    <div className="text-sm text-muted-foreground">
-                      Planejar refeição personalizada
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <Plus className="mr-2 h-3 w-3" />
-                        Adicionar
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <Camera className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+    <ModernLayout>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Utensils className="h-8 w-8 text-primary" />
+            Nutrição
+          </h1>
+          <div className="flex gap-2">
+            <Input
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-auto"
+            />
+            <Button onClick={generateMealPlan}>
+              <Plus className="mr-2 h-4 w-4" />
+              Gerar Plano
+            </Button>
           </div>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="tracking" className="space-y-6">
-          {/* Busca de Alimentos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Search className="h-5 w-5" />
-                Buscar Alimentos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Digite o nome do alimento..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1"
-                />
-                <Button onClick={searchFoods}>
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">
+              <Calculator className="mr-2 h-4 w-4" />
+              Resumo
+            </TabsTrigger>
+            <TabsTrigger value="meals">
+              <Utensils className="mr-2 h-4 w-4" />
+              Refeições
+            </TabsTrigger>
+            <TabsTrigger value="tracking">
+              <Camera className="mr-2 h-4 w-4" />
+              Registro
+            </TabsTrigger>
+            <TabsTrigger value="shopping">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Compras
+            </TabsTrigger>
+          </TabsList>
 
-              {searchResults.length > 0 && (
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {searchResults.map((food) => (
-                    <div key={food.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                      <div>
-                        <p className="font-medium">{food.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {food.calories_per_100g} kcal/100g
-                        </p>
-                      </div>
-                      <Button size="sm">
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+          <TabsContent value="overview" className="space-y-6">
+            {/* Metas Nutricionais */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calculator className="h-5 w-5" />
+                  Metas Diárias Personalizadas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {macroTargets && nutritionStats && (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <MacroCard
+                      label="Calorias"
+                      current={nutritionStats.consumed.calories}
+                      target={nutritionStats.target.calories}
+                      unit=" kcal"
+                      color="blue"
+                    />
+                    <MacroCard
+                      label="Proteínas"
+                      current={nutritionStats.consumed.protein}
+                      target={nutritionStats.target.protein}
+                      unit="g"
+                      color="red"
+                    />
+                    <MacroCard
+                      label="Carboidratos"
+                      current={nutritionStats.consumed.carbs}
+                      target={nutritionStats.target.carbs}
+                      unit="g"
+                      color="green"
+                    />
+                    <MacroCard
+                      label="Gorduras"
+                      current={nutritionStats.consumed.fat}
+                      target={nutritionStats.target.fat}
+                      unit="g"
+                      color="yellow"
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Distribuição de Macros */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribuição de Macronutrientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-center text-muted-foreground">
+                    Gráfico de distribuição será implementado aqui
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          {/* Upload de Foto */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5" />
-                Registrar com Foto
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">
-                  Clique para tirar uma foto da sua refeição
-                </p>
-                <Button>
-                  <Camera className="mr-2 h-4 w-4" />
-                  Capturar Foto
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="shopping" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Lista de Compras Automática
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {shoppingList.length > 0 ? (
-                <div className="space-y-6">
-                  {shoppingList.map((category, index) => (
-                    <div key={index}>
-                      <h3 className="font-medium mb-3">{category.category}</h3>
-                      <div className="space-y-2">
-                        {category.items.map((item: string, itemIndex: number) => (
-                          <div key={itemIndex} className="flex items-center gap-3">
-                            <input type="checkbox" className="rounded" />
-                            <span className="flex-1">{item}</span>
-                          </div>
-                        ))}
+          <TabsContent value="meals" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {mealTypes.map((meal) => (
+                <Card key={meal.value} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <span className="text-2xl">{meal.icon}</span>
+                        {meal.label}
+                      </CardTitle>
+                      <Badge variant="outline">{meal.time}</Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="space-y-3">
+                      <div className="text-sm text-muted-foreground">
+                        Planejar refeição personalizada
+                      </div>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1">
+                          <Plus className="mr-2 h-3 w-3" />
+                          Adicionar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Camera className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
-                  ))}
-                  <Button className="w-full">
-                    <ShoppingCart className="mr-2 h-4 w-4" />
-                    Compartilhar Lista
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="tracking" className="space-y-6">
+            {/* Busca de Alimentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Buscar Alimentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Digite o nome do alimento..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button onClick={searchFoods}>
+                    <Search className="h-4 w-4" />
                   </Button>
                 </div>
-              ) : (
-                <div className="text-center py-8">
-                  <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+
+                {searchResults.length > 0 && (
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {searchResults.map((food) => (
+                      <div key={food.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                        <div>
+                          <p className="font-medium">{food.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {food.calories_per_100g} kcal/100g
+                          </p>
+                        </div>
+                        <Button size="sm">
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Upload de Foto */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5" />
+                  Registrar com Foto
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
+                  <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground mb-4">
-                    Gere um plano alimentar para criar sua lista de compras automaticamente
+                    Clique para tirar uma foto da sua refeição
                   </p>
-                  <Button onClick={generateMealPlan}>
-                    Gerar Lista de Compras
+                  <Button>
+                    <Camera className="mr-2 h-4 w-4" />
+                    Capturar Foto
                   </Button>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="shopping" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingCart className="h-5 w-5" />
+                  Lista de Compras Automática
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {shoppingList.length > 0 ? (
+                  <div className="space-y-6">
+                    {shoppingList.map((category, index) => (
+                      <div key={index}>
+                        <h3 className="font-medium mb-3">{category.category}</h3>
+                        <div className="space-y-2">
+                          {category.items.map((item: string, itemIndex: number) => (
+                            <div key={itemIndex} className="flex items-center gap-3">
+                              <input type="checkbox" className="rounded" />
+                              <span className="flex-1">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <Button className="w-full">
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      Compartilhar Lista
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <ShoppingCart className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground mb-4">
+                      Gere um plano alimentar para criar sua lista de compras automaticamente
+                    </p>
+                    <Button onClick={generateMealPlan}>
+                      Gerar Lista de Compras
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ModernLayout>
   );
 }

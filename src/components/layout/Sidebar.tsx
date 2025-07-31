@@ -37,12 +37,6 @@ const menuItems = [
     description: 'Planos inteligentes'
   },
   { 
-    icon: Droplets, 
-    label: 'Hidratação', 
-    path: '/hydration',
-    description: 'Lembretes adaptativos'
-  },
-  { 
     icon: LineChart, 
     label: 'Progresso', 
     path: '/progress',
@@ -53,18 +47,6 @@ const menuItems = [
     label: 'Calendário', 
     path: '/calendar',
     description: 'Planejamento visual'
-  },
-  { 
-    icon: History, 
-    label: 'Histórico', 
-    path: '/history',
-    description: 'Atividades completas'
-  },
-  { 
-    icon: Trophy, 
-    label: 'Conquistas', 
-    path: '/achievements',
-    description: 'Sistema gamificado'
   },
   { 
     icon: User, 
