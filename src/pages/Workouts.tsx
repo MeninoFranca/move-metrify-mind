@@ -294,12 +294,12 @@ export default function Workouts() {
                       {/* Aquecimento */}
                       {iaResponse.aquecimento && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <h3 className="font-semibold flex items-center gap-2">
                             🔥 Aquecimento
                           </h3>
                           <ul className="space-y-2">
                             {iaResponse.aquecimento.map((item, index) => (
-                              <li key={index} className="text-sm bg-secondary/50 p-2 rounded-md">
+                              <li key={index} className="text-sm bg-secondary/50 p-3 rounded-md">
                                 {item}
                               </li>
                             ))}
@@ -310,24 +310,24 @@ export default function Workouts() {
                       {/* Exercícios */}
                       {iaResponse.exercicios && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <h3 className="font-semibold flex items-center gap-2">
                             💪 Exercícios
                           </h3>
                           <div className="space-y-4">
                             {iaResponse.exercicios.map((exercicio, index) => (
                               <div key={index} className="border rounded-lg p-4 space-y-3">
                                 <div className="flex justify-between items-start">
-                                  <h4 className="font-medium text-sm">{exercicio.exercicio}</h4>
+                                  <h4 className="font-medium">{exercicio.exercicio}</h4>
                                   <Badge variant="outline">
-                                    {exercicio.series}x{exercicio.repeticoes}
+                                    {exercicio.series} séries × {exercicio.repeticoes} reps
                                   </Badge>
                                 </div>
-                                <div className="text-xs text-muted-foreground flex gap-4">
-                                  <span>⏱️ {exercicio.descanso}</span>
+                                <div className="text-sm text-muted-foreground">
+                                  <span>⏱️ Descanso: {exercicio.descanso}</span>
                                 </div>
-                                <p className="text-xs bg-secondary/30 p-2 rounded">
-                                  {exercicio.instrucoes}
-                                </p>
+                                <div className="text-sm bg-secondary/30 p-3 rounded">
+                                  <strong>Instruções:</strong> {exercicio.instrucoes}
+                                </div>
                               </div>
                             ))}
                           </div>
@@ -337,12 +337,12 @@ export default function Workouts() {
                       {/* Alongamento */}
                       {iaResponse.alongamento && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <h3 className="font-semibold flex items-center gap-2">
                             🧘 Alongamento
                           </h3>
                           <ul className="space-y-2">
                             {iaResponse.alongamento.map((item, index) => (
-                              <li key={index} className="text-sm bg-secondary/50 p-2 rounded-md">
+                              <li key={index} className="text-sm bg-secondary/50 p-3 rounded-md">
                                 {item}
                               </li>
                             ))}
@@ -353,12 +353,12 @@ export default function Workouts() {
                       {/* Dicas */}
                       {iaResponse.dicas && (
                         <div className="space-y-3">
-                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                          <h3 className="font-semibold flex items-center gap-2">
                             💡 Dicas Importantes
                           </h3>
                           <ul className="space-y-2">
                             {iaResponse.dicas.map((dica, index) => (
-                              <li key={index} className="text-sm bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded-md border-l-2 border-yellow-500">
+                              <li key={index} className="text-sm bg-amber-50 dark:bg-amber-950/20 p-3 rounded-md border-l-4 border-amber-500">
                                 {dica}
                               </li>
                             ))}
