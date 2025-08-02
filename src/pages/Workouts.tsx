@@ -3,64 +3,98 @@ import ModernLayout from '@/components/layout/ModernLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dumbbell, Play, Clock, Zap, Target, Search, Star, BarChart3, Filter } from 'lucide-react';
+import { Dumbbell, Play, Target, Search, Star, BarChart3, Filter } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 const workoutTypes = [
-  { value: 'strength', label: 'Força', icon: '💪', color: 'bg-blue-100 text-blue-800' },
-  { value: 'cardio', label: 'Cardio', icon: '❤️', color: 'bg-red-100 text-red-800' },
-  { value: 'hiit', label: 'HIIT', icon: '⚡', color: 'bg-orange-100 text-orange-800' },
-  { value: 'flexibility', label: 'Flexibilidade', icon: '🧘', color: 'bg-green-100 text-green-800' },
+  { value: 'Força', label: 'Força', icon: '💪' },
+  { value: 'Cardio', label: 'Cardio', icon: '❤️' },
+  { value: 'HIIT', label: 'HIIT', icon: '⚡' },
+  { value: 'Flexibilidade', label: 'Flexibilidade', icon: '🧘' },
 ];
 
-const intensityLevels = [
-  { value: 1, label: 'Muito Leve', color: 'bg-green-100 text-green-800' },
-  { value: 5, label: 'Moderado', color: 'bg-yellow-100 text-yellow-800' },
-  { value: 8, label: 'Intenso', color: 'bg-orange-100 text-orange-800' },
-  { value: 10, label: 'Máximo', color: 'bg-red-100 text-red-800' },
+const equipmentOptions = [
+  'Nenhum',
+  'Peso Corporal', 
+  'Halteres',
+  'Faixas Elásticas',
+  'Academia'
+];
+
+const muscleGroups = [
+  'Peito',
+  'Costas', 
+  'Pernas',
+  'Ombros',
+  'Braços',
+  'Core',
+  'Corpo Inteiro'
+];
+
+const difficultyLevels = [
+  { value: 'Iniciante', label: 'Iniciante' },
+  { value: 'Intermediário', label: 'Intermediário' },
+  { value: 'Avançado', label: 'Avançado' },
 ];
 
 export default function Workouts() {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'generate' | 'library'>('generate');
   const [duration, setDuration] = useState([45]);
-  const [workoutType, setWorkoutType] = useState('');
-  const [intensity, setIntensity] = useState([5]);
+  const [selectedWorkoutType, setSelectedWorkoutType] = useState('');
+  const [selectedEquipment, setSelectedEquipment] = useState<string[]>([]);
+  const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([]);
+  const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
   const [iaResponse, setIaResponse] = useState<string | null>(null);
+
+  const handleEquipmentChange = (equipment: string, checked: boolean) => {
+    if (checked) {
+      setSelectedEquipment(prev => [...prev, equipment]);
+    } else {
+      setSelectedEquipment(prev => prev.filter(item => item !== equipment));
+    }
+  };
+
+  const handleMuscleGroupChange = (muscleGroup: string, checked: boolean) => {
+    if (checked) {
+      setSelectedMuscleGroups(prev => [...prev, muscleGroup]);
+    } else {
+      setSelectedMuscleGroups(prev => prev.filter(item => item !== muscleGroup));
+    }
+  };
 
   const generateWorkout = async () => {
     setIsGenerating(true);
     setIaResponse(null);
 
-    // Montar payload para o webhook
     const payload = {
-      tipo_treino: workoutType || '',
+      tipo_treino: selectedWorkoutType,
       duracao: duration[0],
-      equipamentos: profile?.available_equipment || [],
-      grupos_musculares: [], // Se houver seleção, preencher aqui
-      nivel_dificuldade: intensity[0]?.toString() || ''
+      equipamentos: selectedEquipment,
+      grupos_musculares: selectedMuscleGroups,
+      nivel_dificuldade: selectedDifficulty
     };
 
     try {
-      // Enviar para o webhook
       const res = await fetch('https://eo79vrb7n8f87mj.m.pipedream.net', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      
       if (!res.ok) throw new Error('Erro ao enviar para o webhook');
+      
       const data = await res.json();
-      // Tratar resposta da IA
       let iaMsg = (data.message || 'IA não respondeu.').replace(/[#*]/g, '');
       setIaResponse(iaMsg);
+      
       toast({
-        title: 'Webhook enviado!',
-        description: 'Os dados do treino foram enviados para o agente de IA.',
+        title: 'Treino Gerado!',
+        description: 'Resposta recebida do agente de IA.',
       });
     } catch (error) {
       setIaResponse('Não foi possível obter resposta da IA.');
@@ -69,44 +103,9 @@ export default function Workouts() {
         description: 'Não foi possível enviar para o webhook.',
         variant: 'destructive',
       });
-    }
-
-    // Simulação de geração de treino (mantido para UX)
-    try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const workout = {
-        name: `Treino ${workoutType || 'Personalizado'}`,
-        type: workoutType || 'strength',
-        duration: duration[0],
-        intensity: intensity[0],
-        exercises: [
-          { name: 'Push-ups', sets: 3, reps: 12, rest: 60 },
-          { name: 'Squats', sets: 3, reps: 15, rest: 60 },
-          { name: 'Plank', sets: 3, duration: 30, rest: 45 },
-          { name: 'Lunges', sets: 3, reps: 10, rest: 60 },
-        ]
-      };
-      setGeneratedWorkout(workout);
-      toast({
-        title: "Treino Gerado!",
-        description: "Seu treino personalizado está pronto para começar.",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível gerar o treino. Tente novamente.",
-        variant: "destructive",
-      });
     } finally {
       setIsGenerating(false);
     }
-  };
-
-  const startWorkout = () => {
-    toast({
-      title: "Iniciando Treino",
-      description: "Timer ativado! Boa sorte! 💪",
-    });
   };
 
   return (
@@ -140,30 +139,29 @@ export default function Workouts() {
             {/* Gerador de Treino */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
-                  Algoritmo de Personalização
-                </CardTitle>
+                <CardTitle>Personalizar Treino</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Tipo de Treino */}
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Tipo de Treino</label>
-                  <Select value={workoutType} onValueChange={setWorkoutType}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Auto-seleção baseada no perfil" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {workoutTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center gap-2">
-                            <span>{type.icon}</span>
-                            {type.label}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 gap-2">
+                    {workoutTypes.map((type) => (
+                      <div key={type.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={type.value}
+                          checked={selectedWorkoutType === type.value}
+                          onCheckedChange={(checked) => {
+                            setSelectedWorkoutType(checked ? type.value : '');
+                          }}
+                        />
+                        <label htmlFor={type.value} className="text-sm flex items-center gap-2 cursor-pointer">
+                          <span>{type.icon}</span>
+                          {type.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Duração */}
@@ -185,38 +183,62 @@ export default function Workouts() {
                   </div>
                 </div>
 
-                {/* Intensidade */}
-                <div className="space-y-3">
-                  <label className="text-sm font-medium">
-                    Intensidade: {intensity[0]}/10
-                  </label>
-                  <Slider
-                    value={intensity}
-                    onValueChange={setIntensity}
-                    min={1}
-                    max={10}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Leve</span>
-                    <span>Máximo</span>
-                  </div>
-                </div>
-
                 {/* Equipamentos */}
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Equipamentos Disponíveis</label>
-                  <div className="flex flex-wrap gap-2">
-                    {profile?.available_equipment?.map((equipment) => (
-                      <Badge key={equipment} variant="secondary">
-                        {equipment}
-                      </Badge>
-                    )) || (
-                      <p className="text-sm text-muted-foreground">
-                        Configure seus equipamentos no perfil
-                      </p>
-                    )}
+                  <div className="grid grid-cols-2 gap-2">
+                    {equipmentOptions.map((equipment) => (
+                      <div key={equipment} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={equipment}
+                          checked={selectedEquipment.includes(equipment)}
+                          onCheckedChange={(checked) => handleEquipmentChange(equipment, checked as boolean)}
+                        />
+                        <label htmlFor={equipment} className="text-sm cursor-pointer">
+                          {equipment}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Grupos Musculares */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Grupos Musculares</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {muscleGroups.map((group) => (
+                      <div key={group} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={group}
+                          checked={selectedMuscleGroups.includes(group)}
+                          onCheckedChange={(checked) => handleMuscleGroupChange(group, checked as boolean)}
+                        />
+                        <label htmlFor={group} className="text-sm cursor-pointer">
+                          {group}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Nível de Dificuldade */}
+                <div className="space-y-3">
+                  <label className="text-sm font-medium">Nível de Dificuldade</label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {difficultyLevels.map((level) => (
+                      <div key={level.value} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={level.value}
+                          checked={selectedDifficulty === level.value}
+                          onCheckedChange={(checked) => {
+                            setSelectedDifficulty(checked ? level.value : '');
+                          }}
+                        />
+                        <label htmlFor={level.value} className="text-sm cursor-pointer">
+                          {level.label}
+                        </label>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -241,44 +263,15 @@ export default function Workouts() {
               </CardContent>
             </Card>
 
-            {/* Treino Gerado */}
-            {generatedWorkout && (
+            {/* Resposta da IA */}
+            {iaResponse && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
-                    {generatedWorkout.name}
-                  </CardTitle>
-                  <div className="flex gap-2">
-                    <Badge className={workoutTypes.find(t => t.value === generatedWorkout.type)?.color}>
-                      {workoutTypes.find(t => t.value === generatedWorkout.type)?.label}
-                    </Badge>
-                    <Badge variant="outline">
-                      {generatedWorkout.duration} min
-                    </Badge>
-                    <Badge variant="outline">
-                      Intensidade {generatedWorkout.intensity}/10
-                    </Badge>
-                  </div>
+                  <CardTitle>Treino Personalizado</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    {generatedWorkout.exercises.map((exercise: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-muted rounded-lg">
-                        <div>
-                          <p className="font-medium">{exercise.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {exercise.sets} séries × {exercise.reps || `${exercise.duration}s`}
-                          </p>
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {exercise.rest}s descanso
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Button onClick={startWorkout} className="w-full" size="lg">
+                <CardContent>
+                  <div className="whitespace-pre-line text-sm">{iaResponse}</div>
+                  <Button className="w-full mt-4" size="lg">
                     <Play className="mr-2 h-4 w-4" />
                     Iniciar Treino
                   </Button>
@@ -288,46 +281,8 @@ export default function Workouts() {
           </div>
         )}
 
-        {/* Resposta da IA */}
-        {activeTab === 'generate' && iaResponse && (
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle>Resposta da IA</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="whitespace-pre-line text-muted-foreground">{iaResponse}</div>
-            </CardContent>
-          </Card>
-        )}
-
         {activeTab === 'library' && (
           <div className="space-y-6">
-            {/* Filtros */}
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex gap-4 items-center">
-                  <div className="flex-1">
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Filtrar por tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {workoutTypes.map((type) => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.icon} {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button variant="outline">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filtros Avançados
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Lista de Treinos */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -340,7 +295,7 @@ export default function Workouts() {
                       </Button>
                     </div>
                     <div className="flex gap-2">
-                      <Badge className="bg-blue-100 text-blue-800">💪 Força</Badge>
+                      <Badge variant="secondary">💪 Força</Badge>
                       <Badge variant="outline">45 min</Badge>
                     </div>
                   </CardHeader>
