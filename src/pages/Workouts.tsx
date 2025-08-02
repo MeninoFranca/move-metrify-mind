@@ -49,7 +49,7 @@ export default function Workouts() {
   const [selectedMuscleGroups, setSelectedMuscleGroups] = useState<string[]>([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [iaResponse, setIaResponse] = useState<string | null>(null);
+  const [iaResponse, setIaResponse] = useState<any>(null);
 
   const handleEquipmentChange = (equipment: string, checked: boolean) => {
     if (checked) {
@@ -89,8 +89,16 @@ export default function Workouts() {
       if (!res.ok) throw new Error('Erro ao enviar para o webhook');
       
       const data = await res.json();
-      let iaMsg = (data.message || 'IA não respondeu.').replace(/[#*]/g, '');
-      setIaResponse(iaMsg);
+      let iaMsg = data.message || 'IA não respondeu.';
+      
+      // Tentar parsear como JSON se possível
+      try {
+        const workoutData = JSON.parse(iaMsg);
+        setIaResponse(workoutData);
+      } catch {
+        // Se não for JSON válido, manter como string
+        setIaResponse(iaMsg.replace(/[#*]/g, ''));
+      }
       
       toast({
         title: 'Treino Gerado!',
@@ -267,11 +275,100 @@ export default function Workouts() {
             {iaResponse && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Treino Personalizado</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    {typeof iaResponse === 'object' ? (iaResponse.nome || 'Treino Personalizado') : 'Treino Personalizado'}
+                  </CardTitle>
+                  {typeof iaResponse === 'object' && iaResponse.duracao && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span>⏱️ {iaResponse.duracao} minutos</span>
+                    </div>
+                  )}
                 </CardHeader>
-                <CardContent>
-                  <div className="whitespace-pre-line text-sm">{iaResponse}</div>
-                  <Button className="w-full mt-4" size="lg">
+                <CardContent className="space-y-6">
+                  {typeof iaResponse === 'string' ? (
+                    // Exibir resposta em texto simples se não for JSON estruturado
+                    <div className="whitespace-pre-line text-sm">{iaResponse}</div>
+                  ) : (
+                    <>
+                      {/* Aquecimento */}
+                      {iaResponse.aquecimento && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            🔥 Aquecimento
+                          </h3>
+                          <ul className="space-y-2">
+                            {iaResponse.aquecimento.map((item, index) => (
+                              <li key={index} className="text-sm bg-secondary/50 p-2 rounded-md">
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Exercícios */}
+                      {iaResponse.exercicios && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            💪 Exercícios
+                          </h3>
+                          <div className="space-y-4">
+                            {iaResponse.exercicios.map((exercicio, index) => (
+                              <div key={index} className="border rounded-lg p-4 space-y-3">
+                                <div className="flex justify-between items-start">
+                                  <h4 className="font-medium text-sm">{exercicio.exercicio}</h4>
+                                  <Badge variant="outline">
+                                    {exercicio.series}x{exercicio.repeticoes}
+                                  </Badge>
+                                </div>
+                                <div className="text-xs text-muted-foreground flex gap-4">
+                                  <span>⏱️ {exercicio.descanso}</span>
+                                </div>
+                                <p className="text-xs bg-secondary/30 p-2 rounded">
+                                  {exercicio.instrucoes}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Alongamento */}
+                      {iaResponse.alongamento && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            🧘 Alongamento
+                          </h3>
+                          <ul className="space-y-2">
+                            {iaResponse.alongamento.map((item, index) => (
+                              <li key={index} className="text-sm bg-secondary/50 p-2 rounded-md">
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Dicas */}
+                      {iaResponse.dicas && (
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-sm flex items-center gap-2">
+                            💡 Dicas Importantes
+                          </h3>
+                          <ul className="space-y-2">
+                            {iaResponse.dicas.map((dica, index) => (
+                              <li key={index} className="text-sm bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded-md border-l-2 border-yellow-500">
+                                {dica}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  <Button className="w-full mt-6" size="lg">
                     <Play className="mr-2 h-4 w-4" />
                     Iniciar Treino
                   </Button>
