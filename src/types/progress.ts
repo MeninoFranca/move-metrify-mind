@@ -55,6 +55,9 @@ export interface MetaProgresso {
 }
 
 export interface EstatisticasProgresso {
+  tempo_medio_treino: number;
+  calorias_queimadas_semana: number;
+  treinos_semana: number;
   mediaPeso: number;
   variacaoPeso: number;
   diasTreinados: number;
