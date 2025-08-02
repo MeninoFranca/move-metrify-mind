@@ -7,18 +7,18 @@ import { ProgressProvider } from '@/contexts/ProgressContext';
 import { WorkoutProvider } from '@/contexts/WorkoutContext';
 import { NutritionProvider } from '@/contexts/NutritionContext';
 import { CalendarProvider } from '@/contexts/CalendarContext';
+import { UserProvider } from '@/contexts/UserContext';
 
 // Páginas
 import Landing from '@/pages/Landing';
 import Auth from '@/pages/Auth';
+import Workouts from '@/pages/Workouts';
 import ModernDashboard from '@/pages/ModernDashboard';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import Progress from '@/pages/Progress';
-import WorkoutGenerator from '@/pages/WorkoutGenerator';
 import Nutrition from '@/pages/Nutrition';
 import CalendarPage from '@/pages/Calendar';
-import WorkoutExecution from '@/pages/WorkoutExecution'; // <-- Importação da nova página
 import Onboarding from '@/pages/Onboarding'; // <-- Importação da página de Onboarding
 
 import './App.css';
@@ -30,6 +30,7 @@ function App() {
         <WorkoutProvider>
           <NutritionProvider>
             <CalendarProvider>
+              <UserProvider>
               <Router>
                 <div className="App">
                   <Routes>
@@ -43,8 +44,7 @@ function App() {
                     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                     <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
-                    <Route path="/workouts" element={<ProtectedRoute><WorkoutGenerator /></ProtectedRoute>} />
-                    <Route path="/workout/execute" element={<ProtectedRoute><WorkoutExecution /></ProtectedRoute>} /> {/* <-- Nova Rota */}
+                    <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
                     <Route path="/nutrition" element={<ProtectedRoute><Nutrition /></ProtectedRoute>} />
                     <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
                     
@@ -54,6 +54,7 @@ function App() {
                   <Toaster />
                 </div>
               </Router>
+              </UserProvider>
             </CalendarProvider>
           </NutritionProvider>
         </WorkoutProvider>

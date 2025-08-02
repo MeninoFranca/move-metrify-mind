@@ -10,6 +10,9 @@ import { Utensils, Calculator, ShoppingCart, Camera, Search, Plus, CheckCircle }
 import { useAuth } from '@/contexts/AuthContext';
 import { nutritionService, MacroTargets, NutritionStats } from '@/services/nutritionService';
 import { toast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
 
 const mealTypes = [
   { value: 'breakfast', label: 'Café da Manhã', icon: '🌅', time: '07:00' },
@@ -22,8 +25,98 @@ const mealTypes = [
 
 import ModernLayout from '@/components/layout/ModernLayout';
 
+// Componente de Chatbot Nutricionista
+function NutritionChatbot() {
+  const [messages, setMessages] = useState([
+    { from: 'bot', text: 'Olá! Sou sua nutricionista virtual. Como posso te ajudar hoje?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function sendMessage(e: React.FormEvent) {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const userMsg = { from: 'user', text: input };
+    setMessages((msgs) => [...msgs, userMsg]);
+    setInput('');
+    setLoading(true);
+    try {
+      const res = await fetch('https://eoz9dvmo1ewuj61.m.pipedream.net', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: input })
+      });
+      const data = await res.json();
+      let botMsg = (data.message || 'Desculpe, não entendi. Pode reformular?').replace(/[\#\*]/g, '');
+      setMessages((msgs) => [...msgs, { from: 'bot', text: botMsg }]);
+    } catch {
+      setMessages((msgs) => [...msgs, { from: 'bot', text: 'Erro ao conectar com a IA.' }]);
+    }
+    setLoading(false);
+  }
+
+  // Animação de digitando
+  function TypingIndicator() {
+    return (
+      <div className="flex items-end gap-2">
+        <div className="bg-muted px-4 py-2 rounded-2xl rounded-bl-none max-w-xs text-sm text-muted-foreground animate-pulse">
+          Digitando<span className="inline-block animate-bounce">...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Chat com Nutricionista Virtual</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 overflow-y-auto flex flex-col gap-2 mb-2 bg-muted/50 rounded p-2">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={
+                msg.from === 'user'
+                  ? 'flex justify-end'
+                  : 'flex justify-start'
+              }
+            >
+              <div
+                className={
+                  'whitespace-pre-line break-words px-4 py-2 rounded-2xl max-w-[75%] shadow ' +
+                  (msg.from === 'user'
+                    ? 'bg-primary text-primary-foreground rounded-br-none'
+                    : 'bg-muted text-muted-foreground rounded-bl-none')
+                }
+                style={{ wordBreak: 'break-word' }}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          {loading && <TypingIndicator />}
+        </div>
+        <form onSubmit={sendMessage} className="flex gap-2">
+          <Textarea
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Digite sua dúvida nutricional..."
+            rows={1}
+            className="flex-1 resize-none"
+            disabled={loading}
+            style={{ minHeight: 40 }}
+          />
+          <Button type="submit" disabled={loading || !input.trim()}>Enviar</Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function Nutrition() {
   const { profile } = useAuth();
+  const { usuario } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
   const [macroTargets, setMacroTargets] = useState<MacroTargets | null>(null);
   const [nutritionStats, setNutritionStats] = useState<NutritionStats | null>(null);
@@ -123,6 +216,41 @@ export default function Nutrition() {
   return (
     <ModernLayout>
       <div className="space-y-6">
+        {/* Perfil do Usuário */}
+        {usuario && (
+          <Card className="mb-4">
+            <CardContent className="flex flex-col md:flex-row gap-4 items-center md:items-end justify-between p-4">
+              <div className="flex items-center gap-4">
+                {usuario.foto && (
+                  <Avatar>
+                    <AvatarImage src={usuario.foto} alt={usuario.nome} />
+                    <AvatarFallback>{usuario.nome[0]}</AvatarFallback>
+                  </Avatar>
+                )}
+                <div>
+                  <div className="font-bold text-lg">{usuario.nome}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Idade: {Math.floor((new Date().getTime() - new Date(usuario.dataNascimento).getTime()) / (365.25*24*60*60*1000))} anos | Gênero: {usuario.genero}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Altura: {usuario.altura} cm | Peso: {usuario.peso} kg
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Nível de Atividade: {usuario.nivelAtividade} | Objetivo: {usuario.objetivo}
+                  </div>
+                  {usuario.restricoesAlimentares.length > 0 && (
+                    <div className="text-xs text-muted-foreground">Restrições: {usuario.restricoesAlimentares.join(', ')}</div>
+                  )}
+                  {usuario.preferenciasAlimentares.length > 0 && (
+                    <div className="text-xs text-muted-foreground">Preferências: {usuario.preferenciasAlimentares.join(', ')}</div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+        {/* Chatbot */}
+        <NutritionChatbot />
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <Utensils className="h-8 w-8 text-primary" />
