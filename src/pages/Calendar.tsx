@@ -6,7 +6,7 @@ import { ptBR } from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useCalendar } from '@/contexts/CalendarContext';
 import { CalendarEvent } from '@/services/calendarService';
-import DashboardLayout from '@/components/layout/DashboardLayout';
+import ModernLayout from '@/components/layout/ModernLayout';
 import AddEventSheet from '@/components/calendar/AddEventSheet';
 import { Loader2 } from 'lucide-react';
 
@@ -49,16 +49,16 @@ const CalendarPage = () => {
 
   if (isLoading) {
     return (
-        <DashboardLayout>
+        <ModernLayout>
             <div className="flex justify-center items-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-      </DashboardLayout>
+      </ModernLayout>
     );
   }
 
   return (
-    <DashboardLayout>
+    <ModernLayout>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Calendário</h1>
@@ -90,7 +90,7 @@ const CalendarPage = () => {
           />
         </div>
       </div>
-    </DashboardLayout>
+    </ModernLayout>
   );
 };
 
