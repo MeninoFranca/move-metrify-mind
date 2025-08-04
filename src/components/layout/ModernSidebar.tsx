@@ -19,7 +19,8 @@ import {
   Sparkles,
   LogOut,
   BarChart3,
-  Utensils
+  Utensils,
+  Crown
 } from 'lucide-react';
 
 const menuItems = [
@@ -65,6 +66,12 @@ const menuItems = [
     label: 'Configurações', 
     path: '/settings',
     description: 'Personalização sistema'
+  },
+  { 
+    icon: Crown, 
+    label: 'Assinatura', 
+    path: '/subscription',
+    description: 'Planos premium'
   },
 ];
 

@@ -21,7 +21,8 @@ import {
   BarChart3,
   Utensils,
   Menu,
-  X
+  X,
+  Crown
 } from 'lucide-react';
 
 const menuItems = [
@@ -67,6 +68,12 @@ const menuItems = [
     label: 'Configurações', 
     path: '/settings',
     description: 'Personalização sistema'
+  },
+  { 
+    icon: Crown, 
+    label: 'Assinatura', 
+    path: '/subscription',
+    description: 'Planos premium'
   },
 ];
 

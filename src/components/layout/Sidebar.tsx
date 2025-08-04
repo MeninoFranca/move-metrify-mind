@@ -13,7 +13,8 @@ import {
   Droplets,
   History,
   Trophy,
-  Sparkles
+  Sparkles,
+  Crown
 } from 'lucide-react';
 
 const menuItems = [
@@ -59,6 +60,12 @@ const menuItems = [
     label: 'Configurações', 
     path: '/settings',
     description: 'Personalização'
+  },
+  { 
+    icon: Crown, 
+    label: 'Assinatura', 
+    path: '/subscription',
+    description: 'Planos premium'
   },
 ];
 

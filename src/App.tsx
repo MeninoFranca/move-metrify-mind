@@ -20,6 +20,9 @@ import Progress from '@/pages/Progress';
 import Nutrition from '@/pages/Nutrition';
 import CalendarPage from '@/pages/Calendar';
 import Onboarding from '@/pages/Onboarding'; // <-- Importação da página de Onboarding
+import Subscription from '@/pages/Subscription';
+import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
+import SubscriptionCancel from '@/pages/SubscriptionCancel';
 
 import './App.css';
 
@@ -47,6 +50,9 @@ function App() {
                     <Route path="/workouts" element={<ProtectedRoute><Workouts /></ProtectedRoute>} />
                     <Route path="/nutrition" element={<ProtectedRoute><Nutrition /></ProtectedRoute>} />
                     <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
+                    <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+                    <Route path="/subscription/success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
+                    <Route path="/subscription/cancel" element={<ProtectedRoute><SubscriptionCancel /></ProtectedRoute>} />
                     
                     {/* Rota de Fallback */}
                     <Route path="*" element={<Navigate to="/" replace />} />

@@ -4,6 +4,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { Sun, Moon, Bell, User } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '@/contexts/AuthContext'; // 1. Importe o useAuth
+import { useStripe } from '@/hooks/useStripe';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const { user, profile, signOut } = useAuth(); // 2. Obtenha os dados do usuário e a função signOut
+  const { getActiveSubscription } = useStripe();
+
+  const activeSubscription = getActiveSubscription();
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-4 bg-background">
@@ -31,6 +35,13 @@ const Header = () => {
 
       {/* Área direita */}
       <div className="flex items-center space-x-4">
+        {/* Subscription Badge */}
+        {activeSubscription && (
+          <Badge variant="secondary" className="hidden sm:flex">
+            {activeSubscription.name}
+          </Badge>
+        )}
+
         {/* Notificações */}
         <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
@@ -70,6 +81,9 @@ const Header = () => {
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
                <Link to="/settings">Configurações</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/subscription">Assinatura</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut}>
