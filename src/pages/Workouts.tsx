@@ -86,12 +86,12 @@ const WorkoutPlayer = ({ workout, onFinish }: { workout: WorkoutPlan, onFinish: 
     <Card className="bg-gradient-to-br from-background to-secondary/30 flex-grow flex flex-col">
         <CardHeader>
             <div className="flex justify-between items-center">
-                <CardTitle className="text-xl">{workout.nome}</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">{workout.nome}</CardTitle>
                 <Button variant="ghost" size="icon" onClick={onFinish}>
                     <XCircle className="h-5 w-5" />
                 </Button>
             </div>
-            <p className="text-muted-foreground">Exercício {currentExerciseIndex + 1} de {exercises.length}</p>
+            <p className="text-muted-foreground text-sm">Exercício {currentExerciseIndex + 1} de {exercises.length}</p>
             <Progress value={((currentExerciseIndex + 1) / exercises.length) * 100} className="mt-2" />
         </CardHeader>
         <CardContent className="text-center space-y-6 flex-grow flex flex-col justify-between">
@@ -243,31 +243,35 @@ export default function Workouts() {
   return (
     <ModernLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Dumbbell className="h-8 w-8 text-primary" />
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Dumbbell className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
             Treinos
           </h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant={activeTab === 'generate' ? 'default' : 'outline'}
               onClick={() => setActiveTab('generate')}
+              className="flex-1 sm:flex-none"
             >
               <Target className="mr-2 h-4 w-4" />
-              Gerar Treino
+              <span className="hidden sm:inline">Gerar Treino</span>
+              <span className="sm:hidden">Gerar</span>
             </Button>
             <Button
               variant={activeTab === 'library' ? 'default' : 'outline'}
               onClick={() => setActiveTab('library')}
+              className="flex-1 sm:flex-none"
             >
               <Search className="mr-2 h-4 w-4" />
-              Biblioteca
+              <span className="hidden sm:inline">Biblioteca</span>
+              <span className="sm:hidden">Lista</span>
             </Button>
           </div>
         </div>
 
         {activeTab === 'generate' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Personalizar Treino</CardTitle>
@@ -275,7 +279,7 @@ export default function Workouts() {
               <CardContent className="space-y-6">
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Tipo de Treino</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {workoutTypes.map((type) => (
                       <div key={type.value} className="flex items-center space-x-2">
                         <Checkbox id={type.value} checked={selectedWorkoutType === type.value} onCheckedChange={(checked) => setSelectedWorkoutType(checked ? type.value : '')} />
@@ -291,7 +295,7 @@ export default function Workouts() {
                 </div>
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Equipamentos Disponíveis</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {equipmentOptions.map((equipment) => (
                       <div key={equipment} className="flex items-center space-x-2">
                         <Checkbox id={equipment} checked={selectedEquipment.includes(equipment)} onCheckedChange={(checked) => handleEquipmentChange(equipment, checked as boolean)} />
@@ -302,7 +306,7 @@ export default function Workouts() {
                 </div>
                 <div className="space-y-3">
                   <label className="text-sm font-medium">Grupos Musculares</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {muscleGroups.map((group) => (
                       <div key={group} className="flex items-center space-x-2">
                         <Checkbox id={group} checked={selectedMuscleGroups.includes(group)} onCheckedChange={(checked) => handleMuscleGroupChange(group, checked as boolean)} />

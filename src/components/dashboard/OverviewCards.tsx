@@ -31,7 +31,7 @@ const OverviewCards: React.FC<OverviewCardsProps> = ({ weeklyStats }) => {
     : 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       {/* Progresso Semanal */}
       <Card className="hover:shadow-medium transition-all duration-300 animate-fade-in">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

@@ -215,11 +215,11 @@ export default function Nutrition() {
 
   return (
     <ModernLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Perfil do Usuário */}
         {usuario && (
           <Card className="mb-4">
-            <CardContent className="flex flex-col md:flex-row gap-4 items-center md:items-end justify-between p-4">
+            <CardContent className="flex flex-col sm:flex-row gap-4 items-center sm:items-end justify-between p-4">
               <div className="flex items-center gap-4">
                 {usuario.foto && (
                   <Avatar>

@@ -155,8 +155,19 @@ const NextWorkoutCard = ({ workout, isLoading }) => (
               <div className="flex items-center"><Zap className="mr-1 h-4 w-4" />Intensidade: {workout.intensity_level || 'N/A'}/10</div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
-              <Button className="gradient-primary flex-1" asChild><Link to={`/workout/execute/${workout.id}`}><Activity className="mr-2 h-4 w-4" />Iniciar Treino</Link></Button>
-              <Button variant="outline" className="flex-1" asChild><Link to={`/workouts/${workout.id}`}>Ver Detalhes</Link></Button>
+              <Button className="gradient-primary flex-1" asChild>
+                <Link to={`/workout/execute/${workout.id}`}>
+                  <Activity className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Iniciar Treino</span>
+                  <span className="sm:hidden">Iniciar</span>
+                </Link>
+              </Button>
+              <Button variant="outline" className="flex-1" asChild>
+                <Link to={`/workouts/${workout.id}`}>
+                  <span className="hidden sm:inline">Ver Detalhes</span>
+                  <span className="sm:hidden">Detalhes</span>
+                </Link>
+              </Button>
             </div>
           </div>
         ) : (
@@ -260,28 +271,38 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Cabeçalho */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
           <div>
             {isLoading ? (
                 <>
-                    <Skeleton className="h-9 w-64 mb-2" />
-                    <Skeleton className="h-6 w-80" />
+                    <Skeleton className="h-7 sm:h-9 w-48 sm:w-64 mb-2" />
+                    <Skeleton className="h-4 sm:h-6 w-60 sm:w-80" />
                 </>
             ) : (
                 <>
-                    <h1 className="text-3xl font-bold">Olá, {profile?.full_name?.split(' ')[0] || 'Usuário'}! 👋</h1>
-                    <p className="text-muted-foreground text-lg">Aqui está seu resumo de hoje. Continue assim!</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold">Olá, {profile?.full_name?.split(' ')[0] || 'Usuário'}! 👋</h1>
+                    <p className="text-muted-foreground text-sm sm:text-lg">Aqui está seu resumo de hoje. Continue assim!</p>
                 </>
             )}
           </div>
-          <div className="flex space-x-3">
-            <Button variant="outline" asChild><Link to="/workouts"><Plus className="mr-2 h-4 w-4" />Novo Treino</Link></Button>
-            <Button className="gradient-primary" asChild><Link to="/progress"><BarChart3 className="mr-2 h-4 w-4" />Ver Progresso</Link></Button>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+            <Button variant="outline" asChild className="w-full sm:w-auto">
+              <Link to="/workouts">
+                <Plus className="mr-2 h-4 w-4" />
+                <span className="sm:inline">Novo Treino</span>
+              </Link>
+            </Button>
+            <Button className="gradient-primary w-full sm:w-auto" asChild>
+              <Link to="/progress">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                <span className="sm:inline">Ver Progresso</span>
+              </Link>
+            </Button>
           </div>
         </div>
 
         {/* Grid de Estatísticas Principais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <StatCard
             icon={Zap}
             title="Treinos na Semana"
@@ -317,13 +338,13 @@ const Dashboard = () => {
         </div>
 
         {/* Grid Principal (Gráfico e Cards Laterais) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <WeeklySummaryChart isLoading={isProgressLoading} />
           <GoalsProgressCard isLoading={isProgressLoading} />
         </div>
 
         {/* Grid Secundário (Próximo Treino e Conquistas) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           <NextWorkoutCard workout={nextWorkout} isLoading={isWorkoutLoading} />
           <AchievementsCard isLoading={isProgressLoading} />
         </div>

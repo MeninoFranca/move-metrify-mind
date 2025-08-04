@@ -81,14 +81,14 @@ const ModernSidebar = () => {
   };
 
   return (
-    <aside className="flex flex-col w-80 border-r bg-sidebar-background backdrop-blur-lg h-screen">
+    <aside className="flex flex-col w-80 border-r bg-sidebar-background backdrop-blur-lg h-screen hidden lg:flex">
       {/* Logo */}
       <div className="h-16 border-b flex items-center px-6">
         <div className="flex items-center space-x-3">
           <div className="p-2 rounded-xl gradient-primary shadow-glow">
             <Dumbbell className="h-5 w-5 text-white" />
           </div>
-          <div>
+          <div className="hidden xl:block">
             <span className="text-xl font-bold">Move Metrify Mind</span>
             <Badge variant="secondary" className="ml-2 text-xs">
               <Sparkles className="mr-1 h-3 w-3" />
@@ -104,7 +104,7 @@ const ModernSidebar = () => {
           <div className="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold">
             {profile?.full_name?.charAt(0) || 'U'}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 hidden xl:block">
             <p className="font-medium truncate">{profile?.full_name || 'Usuário'}</p>
             <p className="text-sm text-muted-foreground">
               {profile?.fitness_goal === 'lose_weight' && '🎯 Perder peso'}
@@ -143,7 +143,7 @@ const ModernSidebar = () => {
                   <Icon className="h-5 w-5" />
                 </div>
                 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 hidden xl:block">
                   <div className="flex items-center justify-between">
                     <span className="font-medium truncate">{item.label}</span>
                     {item.badge && (
@@ -169,15 +169,15 @@ const ModernSidebar = () => {
         <Button
           onClick={handleLogout}
           variant="outline"
-          className="w-full justify-start space-x-3 text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full justify-center xl:justify-start space-x-3 text-destructive hover:text-destructive hover:bg-destructive/10"
         >
           <LogOut className="h-5 w-5" />
-          <span>Sair</span>
+          <span className="hidden xl:inline">Sair</span>
         </Button>
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t hidden xl:block">
         <div className="text-center space-y-2">
           <Badge variant="outline" className="text-xs">
             Versão 2.0.0

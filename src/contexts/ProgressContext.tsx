@@ -40,6 +40,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const calcularEstatisticas = (registros: WeightProgress[], metas: UserGoal[]): EstatisticasProgresso => {
     if (registros.length === 0) {
       return {
+        tempo_medio_treino: 0,
+        calorias_queimadas_semana: 0,
+        treinos_semana: 0,
         mediaPeso: 0,
         variacaoPeso: 0,
         diasTreinados: 0,
@@ -55,6 +58,9 @@ export const ProgressProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const variacaoPeso = Math.max(...pesos) - Math.min(...pesos);
 
     return {
+      tempo_medio_treino: 45, // Valor padrão
+      calorias_queimadas_semana: 1200, // Valor padrão
+      treinos_semana: 3, // Valor padrão
       mediaPeso,
       variacaoPeso,
       diasTreinados: registros.length,
