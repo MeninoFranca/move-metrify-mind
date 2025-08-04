@@ -285,9 +285,9 @@ const Index = () => {
                   Começar Trial Gratuito
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-              </Link>
+                <Link to="/subscription">
               <Button size="lg" variant="outline" className="btn-fitness text-lg px-8 py-4 border-2">
-                <Activity className="mr-2 h-5 w-5" />
+                  Ver Planos Premium
                 Ver Demo Interativa
               </Button>
             </div>

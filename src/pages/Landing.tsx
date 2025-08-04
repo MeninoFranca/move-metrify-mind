@@ -294,7 +294,7 @@ const Landing = () => {
                 <Button size="lg" variant="outline" className="text-lg px-8" asChild>
                   <Link to="/auth?tab=trial">
                     <Sparkles className="mr-2 h-5 w-5" />
-                    Trial Premium Grátis
+                    Ver Planos Premium
                   </Link>
                 </Button>
               </div>
@@ -516,9 +516,9 @@ const Landing = () => {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 border-white text-white hover:bg-white hover:text-primary" asChild>
-                <Link to="/auth?tab=trial">
+                <Link to="/subscription">
                   <Clock className="mr-2 h-5 w-5" />
-                  Trial Premium 7 Dias
+                  Ver Planos Premium
                 </Link>
               </Button>
             </div>

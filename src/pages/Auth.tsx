@@ -66,7 +66,6 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
-  const [isTrialActivated, setIsTrialActivated] = useState(false);
 
   // Forms
   const loginForm = useForm<LoginData>({
@@ -75,10 +74,6 @@ export default function Auth() {
 
   const registerForm = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
-  });
-
-  const trialForm = useForm<TrialData>({
-    resolver: zodResolver(trialSchema),
   });
 
   const password = registerForm.watch("password");
@@ -135,19 +130,6 @@ export default function Auth() {
     }
   };
 
-  const handleTrial = async (data: TrialData) => {
-    setError(null);
-    try {
-      // Simular ativação do trial
-      setIsTrialActivated(true);
-      setTimeout(() => {
-        navigate('/onboarding');
-      }, 2000);
-    } catch (error: any) {
-      setError('Erro ao ativar trial. Tente novamente.');
-    }
-  };
-
   const passwordRequirements = [
     { met: (password?.length || 0) >= 8, text: "Pelo menos 8 caracteres" },
     { met: /[A-Z]/.test(password || ''), text: "Uma letra maiúscula" },
@@ -185,26 +167,13 @@ export default function Auth() {
             </Alert>
           )}
 
-          {isTrialActivated && (
-            <Alert className="mb-6 border-success bg-success/10">
-              <Gift className="h-4 w-4 text-success" />
-              <AlertDescription className="text-success">
-                🎉 Trial ativado com sucesso! Redirecionando...
-              </AlertDescription>
-            </Alert>
-          )}
-          
           <Tabs value={activeTab} onValueChange={(value) => {
-            setActiveTab(value as 'login' | 'register' | 'trial');
+            setActiveTab(value as 'login' | 'register');
             setError(null);
           }}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
               <TabsTrigger value="register" className="text-sm">Cadastro</TabsTrigger>
-              <TabsTrigger value="trial" className="text-sm">
-                <Sparkles className="mr-1 h-3 w-3" />
-                Trial
-              </TabsTrigger>
             </TabsList>
 
             {/* Login Tab */}
@@ -427,86 +396,6 @@ export default function Auth() {
                 </Button>
               </form>
             </TabsContent>
-
-            {/* Trial Tab */}
-            <TabsContent value="trial" className="space-y-4">
-              <div className="text-center mb-6">
-                <div className="flex justify-center mb-4">
-                  <Badge className="gradient-primary text-white px-4 py-2">
-                    <Gift className="mr-2 h-4 w-4" />
-                    7 Dias Grátis
-                  </Badge>
-                </div>
-                <h3 className="text-xl font-semibold">Trial Gratuito</h3>
-                <p className="text-muted-foreground">Experimente todas as funcionalidades premium</p>
-              </div>
-
-              <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                <h4 className="font-semibold mb-2 flex items-center">
-                  <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                  O que está incluído:
-                </h4>
-                <ul className="space-y-1 text-sm">
-                  <li className="flex items-center">
-                    <Check className="h-3 w-3 text-success mr-2" />
-                    Treinos personalizados por IA
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-3 w-3 text-success mr-2" />
-                    Plano nutricional completo
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-3 w-3 text-success mr-2" />
-                    Tracking de progresso avançado
-                  </li>
-                  <li className="flex items-center">
-                    <Check className="h-3 w-3 text-success mr-2" />
-                    Suporte prioritário
-                  </li>
-                </ul>
-              </div>
-
-              <form onSubmit={trialForm.handleSubmit(handleTrial)} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="trial-email" className="flex items-center">
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email para ativar o trial
-                  </Label>
-                  <Input 
-                    id="trial-email" 
-                    type="email" 
-                    placeholder="seu@email.com"
-                    {...trialForm.register("email")}
-                    className="h-12"
-                  />
-                  {trialForm.formState.errors.email && (
-                    <p className="text-sm text-destructive">{trialForm.formState.errors.email.message}</p>
-                  )}
-                </div>
-
-                <Button type="submit" className="w-full h-12 gradient-primary" disabled={isLoading || isTrialActivated}>
-                  {isLoading || isTrialActivated ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      {isTrialActivated ? 'Trial Ativado!' : 'Ativando trial...'}
-                    </div>
-                  ) : (
-                    <>
-                      <Gift className="mr-2 h-4 w-4" />
-                      Ativar Trial Gratuito
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-
-              <div className="text-center">
-                <Badge variant="outline" className="text-xs">
-                  <Shield className="mr-1 h-3 w-3" />
-                  Sem cartão de crédito necessário
-                </Badge>
-              </div>
-            </TabsContent>
           </Tabs>
         </CardContent>
 
@@ -525,8 +414,6 @@ export default function Auth() {
           {activeTab === 'login' ? (
             <p>Não tem uma conta? <button onClick={() => setActiveTab('register')} className="text-primary hover:underline font-medium">Cadastre-se grátis</button></p>
           ) : activeTab === 'register' ? (
-            <p>Já tem uma conta? <button onClick={() => setActiveTab('login')} className="text-primary hover:underline font-medium">Faça login</button></p>
-          ) : (
             <p>Já tem uma conta? <button onClick={() => setActiveTab('login')} className="text-primary hover:underline font-medium">Faça login</button></p>
           )}
         </CardFooter>
