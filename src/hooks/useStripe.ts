@@ -29,7 +29,7 @@ export const useStripe = () => {
   const fetchSubscription = async () => {
     try {
       const { data, error } = await supabase
-        .from('stripe_user_subscriptions')
+        .from('stripe_subscriptions')
         .select('*')
         .maybeSingle();
 
@@ -37,7 +37,7 @@ export const useStripe = () => {
         console.error('Error fetching subscription:', error);
         setSubscription(null);
       } else {
-        setSubscription(data);
+        setSubscription(data as SubscriptionData);
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);

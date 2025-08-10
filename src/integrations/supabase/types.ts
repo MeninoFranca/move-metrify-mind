@@ -573,6 +573,99 @@ export type Database = {
         }
         Relationships: []
       }
+      stripe_orders: {
+        Row: {
+          amount_subtotal: number | null
+          amount_total: number | null
+          checkout_session_id: string
+          created_at: string
+          currency: string | null
+          customer_id: string
+          id: string
+          payment_intent_id: string | null
+          payment_status: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_subtotal?: number | null
+          amount_total?: number | null
+          checkout_session_id: string
+          created_at?: string
+          currency?: string | null
+          customer_id: string
+          id?: string
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_subtotal?: number | null
+          amount_total?: number | null
+          checkout_session_id?: string
+          created_at?: string
+          currency?: string | null
+          customer_id?: string
+          id?: string
+          payment_intent_id?: string | null
+          payment_status?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stripe_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: number | null
+          current_period_start: number | null
+          customer_id: string
+          id: string
+          payment_method_brand: string | null
+          payment_method_last4: string | null
+          price_id: string | null
+          status: string | null
+          subscription_id: string | null
+          subscription_status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: number | null
+          current_period_start?: number | null
+          customer_id: string
+          id?: string
+          payment_method_brand?: string | null
+          payment_method_last4?: string | null
+          price_id?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: number | null
+          current_period_start?: number | null
+          customer_id?: string
+          id?: string
+          payment_method_brand?: string | null
+          payment_method_last4?: string | null
+          price_id?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -833,7 +926,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_water: {
+        Args: { record_id: string; amount: number }
+        Returns: undefined
+      }
     }
     Enums: {
       achievement_type:
@@ -842,6 +938,12 @@ export type Database = {
         | "hydration_goal"
         | "workout_count"
         | "consistency"
+      calendar_event_type:
+        | "workout"
+        | "meal"
+        | "hydration"
+        | "weigh_in"
+        | "custom"
       equipment_type:
         | "full_gym"
         | "dumbbells"
@@ -995,6 +1097,13 @@ export const Constants = {
         "hydration_goal",
         "workout_count",
         "consistency",
+      ],
+      calendar_event_type: [
+        "workout",
+        "meal",
+        "hydration",
+        "weigh_in",
+        "custom",
       ],
       equipment_type: [
         "full_gym",

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useTheme } from '@/hooks/use-theme';
 import { Sun, Moon, Bell, User } from 'lucide-react';
 import MobileMenu from './MobileMenu';
-import { useAuth } from '@/contexts/AuthContext'; // 1. Importe o useAuth
+import { useAuth } from '@/contexts/AuthContext';
 import { useStripe } from '@/hooks/useStripe';
 import {
   DropdownMenu,
