@@ -1,1 +1,18 @@
-{"code":"rate-limited","message":"You have hit the rate limit. Please upgrade to keep chatting.","providerLimitHit":false,"isRetryable":true}
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+
+export default function Index() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/landing');
+    }
+  }, [user, navigate]);
+
+  return null;
+}

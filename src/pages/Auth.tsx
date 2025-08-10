@@ -415,7 +415,7 @@ export default function Auth() {
             <p>Não tem uma conta? <button onClick={() => setActiveTab('register')} className="text-primary hover:underline font-medium">Cadastre-se grátis</button></p>
           ) : activeTab === 'register' ? (
             <p>Já tem uma conta? <button onClick={() => setActiveTab('login')} className="text-primary hover:underline font-medium">Faça login</button></p>
-          )}
+          ) : null}
         </CardFooter>
       </Card>
     </div>
