@@ -62,6 +62,33 @@ export const useSubscription = () => {
     }
   };
 
+  const verifyPayment = async (transactionId: string) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('tribopay-verify', {
+        body: { transactionId }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        // Update local state
+        const expiresAt = new Date(data.expiresAt);
+        setSubscription({
+          plan: data.plan,
+          expiresAt,
+          isActive: true
+        });
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      throw error;
+    }
+  };
+
   const hasFeatureAccess = (feature: 'basic' | 'pro' | 'premium') => {
     if (!subscription.isActive) return feature === 'basic';
     
@@ -82,6 +109,7 @@ export const useSubscription = () => {
     isLoading,
     subscribeToPlan,
     activateSubscription,
+    verifyPayment,
     hasFeatureAccess,
   };
 };
