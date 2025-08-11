@@ -41,7 +41,7 @@ function NutritionChatbot() {
     setInput('');
     setLoading(true);
     try {
-      const res = await fetch('https://eoz9dvmo1ewuj61.m.pipedream.net', {
+      const res = await fetch('https://eorwn4a6xhh4fq7.m.pipedream.net', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })

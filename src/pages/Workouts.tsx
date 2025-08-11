@@ -181,7 +181,7 @@ export default function Workouts() {
     };
 
     try {
-      const res = await fetch('https://eo79vrb7n8f87mj.m.pipedream.net', {
+      const res = await fetch('https://eobb82vfbxll4g4.m.pipedream.net', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
