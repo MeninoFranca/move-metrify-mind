@@ -23,6 +23,7 @@ import Onboarding from '@/pages/Onboarding'; // <-- Importação da página de O
 import Subscription from '@/pages/Subscription';
 import SubscriptionSuccess from '@/pages/SubscriptionSuccess';
 import SubscriptionCancel from '@/pages/SubscriptionCancel';
+import AdminSubscription from '@/pages/AdminSubscription';
 
 import './App.css';
 
@@ -53,6 +54,7 @@ function App() {
                     <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
                     <Route path="/subscription/success" element={<ProtectedRoute><SubscriptionSuccess /></ProtectedRoute>} />
                     <Route path="/subscription/cancel" element={<ProtectedRoute><SubscriptionCancel /></ProtectedRoute>} />
+                    <Route path="/admin/subscription" element={<ProtectedRoute><AdminSubscription /></ProtectedRoute>} />
                     
                     {/* Rota de Fallback */}
                     <Route path="*" element={<Navigate to="/" replace />} />

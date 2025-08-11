@@ -1,24 +1,27 @@
-export interface StripeProduct {
+export interface PlanProduct {
   id: string;
-  priceId: string;
   name: string;
   description: string;
-  mode: 'subscription' | 'payment';
+  price: number;
+  checkoutUrl: string;
+  planType: 'pro' | 'premium';
 }
 
-export const stripeProducts: StripeProduct[] = [
+export const planProducts: PlanProduct[] = [
   {
-    id: 'prod_So5VBWa4SOoRl6',
-    priceId: 'price_1RsTKyH8N4z8pVLBAdFCkPwG',
+    id: 'fit-pro',
     name: 'Fit Pro',
     description: 'Para resultados sérios',
-    mode: 'subscription'
+    price: 29,
+    checkoutUrl: 'https://go.tribopay.com.br/6rifaenkhz',
+    planType: 'pro'
   },
   {
-    id: 'prod_So5Wi4VMLsxSfB',
-    priceId: 'price_1RsTLVH8N4z8pVLBh8NfRTUb',
+    id: 'fit-premium',
     name: 'Fit Premium',
     description: 'Para atletas e entusiastas',
-    mode: 'subscription'
+    price: 49,
+    checkoutUrl: 'https://go.tribopay.com.br/xz6mpkudii',
+    planType: 'premium'
   }
 ];

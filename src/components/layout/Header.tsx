@@ -5,7 +5,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { Sun, Moon, Bell, User } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '@/contexts/AuthContext';
-import { useStripe } from '@/hooks/useStripe';
+import { useSubscription } from '@/hooks/useSubscription';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,10 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
-  const { user, profile, signOut } = useAuth(); // 2. Obtenha os dados do usuário e a função signOut
-  const { getActiveSubscription } = useStripe();
-
-  const activeSubscription = getActiveSubscription();
+  const { user, profile, signOut } = useAuth();
+  const { subscription } = useSubscription();
 
   return (
     <header className="h-16 border-b flex items-center justify-between px-4 bg-background">
@@ -37,9 +35,9 @@ const Header = () => {
       {/* Área direita */}
       <div className="flex items-center space-x-4">
         {/* Subscription Badge */}
-        {activeSubscription && (
+        {subscription.isActive && (
           <Badge variant="secondary" className="hidden sm:flex">
-            {activeSubscription.name}
+            {subscription.plan === 'pro' ? 'Fit Pro' : 'Fit Premium'}
           </Badge>
         )}
 

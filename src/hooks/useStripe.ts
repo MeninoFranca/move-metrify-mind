@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { stripeProducts } from '@/stripe-config';
+import { planProducts } from '@/stripe-config';
 
 interface SubscriptionData {
   subscription_status: string;
@@ -83,7 +83,8 @@ export const useStripe = () => {
   const getActiveSubscription = () => {
     if (!subscription || !subscription.price_id) return null;
     
-    const product = stripeProducts.find(p => p.priceId === subscription.price_id);
+    // Legacy compatibility - não usado mais com TriboPay
+    const product = null;
     return product ? {
       ...product,
       status: subscription.subscription_status,

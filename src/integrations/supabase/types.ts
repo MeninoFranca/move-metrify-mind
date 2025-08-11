@@ -498,6 +498,8 @@ export type Database = {
           full_name: string
           height: number | null
           id: string
+          subscription_expires_at: string | null
+          subscription_plan: string | null
           updated_at: string
           user_id: string
           weekly_availability: Json | null
@@ -517,6 +519,8 @@ export type Database = {
           full_name: string
           height?: number | null
           id?: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
           updated_at?: string
           user_id: string
           weekly_availability?: Json | null
@@ -536,6 +540,8 @@ export type Database = {
           full_name?: string
           height?: number | null
           id?: string
+          subscription_expires_at?: string | null
+          subscription_plan?: string | null
           updated_at?: string
           user_id?: string
           weekly_availability?: Json | null

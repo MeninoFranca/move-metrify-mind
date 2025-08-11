@@ -2,39 +2,20 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useStripe } from '@/hooks/useStripe';
-import { stripeProducts } from '@/stripe-config';
-import { Check, Crown, Zap, Loader2 } from 'lucide-react';
+import { useSubscription } from '@/hooks/useSubscription';
+import { planProducts } from '@/stripe-config';
+import { Check, Crown, Zap, ExternalLink } from 'lucide-react';
 
 export const SubscriptionCard = () => {
-  const { subscription, isLoading, createCheckoutSession, getActiveSubscription } = useStripe();
-  const [loadingPriceId, setLoadingPriceId] = React.useState<string | null>(null);
+  const { subscription, subscribeToPlan } = useSubscription();
 
-  const activeSubscription = getActiveSubscription();
-
-  const handleSubscribe = async (priceId: string) => {
-    try {
-      setLoadingPriceId(priceId);
-      await createCheckoutSession(priceId, 'subscription');
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      setLoadingPriceId(null);
-    }
+  const handleSubscribe = (planType: 'pro' | 'premium') => {
+    subscribeToPlan(planType);
   };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center p-6">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="space-y-6">
-      {activeSubscription && (
+      {subscription.isActive && (
         <Card className="border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -42,21 +23,20 @@ export const SubscriptionCard = () => {
                 <Crown className="h-5 w-5 text-primary" />
                 Plano Ativo
               </CardTitle>
-              <Badge variant="default">{activeSubscription.status}</Badge>
+              <Badge variant="default">Ativo</Badge>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <h3 className="text-xl font-semibold">{activeSubscription.name}</h3>
-              <p className="text-muted-foreground">{activeSubscription.description}</p>
-              {activeSubscription.current_period_end && (
+              <h3 className="text-xl font-semibold">
+                {subscription.plan === 'pro' ? 'Fit Pro' : 'Fit Premium'}
+              </h3>
+              <p className="text-muted-foreground">
+                {subscription.plan === 'pro' ? 'Para resultados sérios' : 'Para atletas e entusiastas'}
+              </p>
+              {subscription.expiresAt && (
                 <p className="text-sm text-muted-foreground">
-                  Próxima cobrança: {new Date(activeSubscription.current_period_end * 1000).toLocaleDateString('pt-BR')}
-                </p>
-              )}
-              {activeSubscription.payment_method && (
-                <p className="text-sm text-muted-foreground">
-                  Método de pagamento: {activeSubscription.payment_method}
+                  Expira em: {subscription.expiresAt.toLocaleDateString('pt-BR')}
                 </p>
               )}
             </div>
@@ -65,9 +45,8 @@ export const SubscriptionCard = () => {
       )}
 
       <div className="grid md:grid-cols-2 gap-6">
-        {stripeProducts.map((product) => {
-          const isActive = activeSubscription?.priceId === product.priceId;
-          const isLoading = loadingPriceId === product.priceId;
+        {planProducts.map((product) => {
+          const isActive = subscription.isActive && subscription.plan === product.planType;
           
           return (
             <Card key={product.id} className={isActive ? 'border-primary bg-primary/5' : ''}>
@@ -90,13 +69,13 @@ export const SubscriptionCard = () => {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <div className="text-2xl font-bold">
-                    {product.name === 'Fit Pro' ? 'R$ 29' : 'R$ 49'}
+                    R$ {product.price}
                     <span className="text-sm font-normal text-muted-foreground">/mês</span>
                   </div>
                 </div>
 
                 <ul className="space-y-2 text-sm">
-                  {product.name === 'Fit Pro' ? (
+                  {product.planType === 'pro' ? (
                     <>
                       <li className="flex items-center gap-2">
                         <Check className="h-4 w-4 text-green-500" />
@@ -144,18 +123,16 @@ export const SubscriptionCard = () => {
                 <Button
                   className="w-full"
                   variant={isActive ? 'secondary' : 'default'}
-                  disabled={isActive || isLoading}
-                  onClick={() => handleSubscribe(product.priceId)}
+                  disabled={isActive}
+                  onClick={() => handleSubscribe(product.planType)}
                 >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processando...
-                    </>
-                  ) : isActive ? (
+                  {isActive ? (
                     'Plano Atual'
                   ) : (
-                    'Assinar Agora'
+                    <>
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Assinar Agora
+                    </>
                   )}
                 </Button>
               </CardContent>
